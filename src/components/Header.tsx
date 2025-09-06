@@ -1,7 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu } from "lucide-react";
+import { ShoppingCart, Menu, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuthAction = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -42,6 +55,26 @@ const Header = () => {
               0
             </span>
           </Button>
+          
+          {/* Auth Button */}
+          <Button 
+            variant="ghost" 
+            onClick={handleAuthAction}
+            className="hidden sm:flex items-center space-x-2"
+          >
+            {user ? (
+              <>
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </>
+            ) : (
+              <>
+                <User className="h-4 w-4" />
+                <span>Sign In</span>
+              </>
+            )}
+          </Button>
+          
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
           </Button>
