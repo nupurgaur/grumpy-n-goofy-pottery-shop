@@ -53,7 +53,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">Portland, Oregon</span>
+                <span className="text-primary-foreground/80">Mumbai, India</span>
               </div>
             </div>
           </div>
@@ -82,7 +82,7 @@ const Footer = () => {
           <div className="flex items-center space-x-2 text-primary-foreground/80">
             <span>Made with</span>
             <Heart className="h-4 w-4 text-secondary fill-current" />
-            <span>in Portland, Oregon</span>
+            <span>in Mumbai, India</span>
           </div>
 
           {/* Social Links */}
