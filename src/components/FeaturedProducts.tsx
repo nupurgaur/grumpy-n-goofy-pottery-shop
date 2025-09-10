@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, Heart, Star } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
 import mugImage from "@/assets/pottery-mug.jpg";
 import vaseImage from "@/assets/pottery-vase.jpg";
 import bowlImage from "@/assets/pottery-bowl.jpg";
@@ -50,6 +51,16 @@ const products: Product[] = [
 ];
 
 const FeaturedProducts = () => {
+  const { addItem } = useCart();
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image
+    });
+  };
   return (
     <section id="shop" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -130,7 +141,12 @@ const FeaturedProducts = () => {
                         </span>
                       )}
                     </div>
-                    <Button variant="accent" size="sm" className="group">
+                    <Button 
+                      variant="accent" 
+                      size="sm" 
+                      className="group"
+                      onClick={() => handleAddToCart(product)}
+                    >
                       <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                       Add to Cart
                     </Button>

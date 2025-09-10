@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { CartIcon } from "@/components/Cart";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -49,12 +50,7 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs flex items-center justify-center">
-              0
-            </span>
-          </Button>
+          <CartIcon />
           
           {/* Auth Button */}
           <Button 
