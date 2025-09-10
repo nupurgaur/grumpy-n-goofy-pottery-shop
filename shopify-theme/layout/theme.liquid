@@ -1,0 +1,19 @@
+{% comment %} Converted from src/App.tsx {% endcomment %}
+<!doctype html>
+<html lang="en">
+  <head>
+    {% render 'meta-tags' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ shop.name }}{% if page_title %} — {{ page_title }}{% endif %}</title>
+    <link rel="icon" href="{{ 'favicon.ico' | asset_url }}">
+    <link href="{{ 'app.css' | asset_url }}" rel="stylesheet">
+    {{ content_for_header }}
+  </head>
+  <body>
+    {% section 'header' %}
+    <main role="main">{{ content_for_layout }}</main>
+    {% section 'footer' %}
+    <script src="{{ 'app.js' | asset_url }}" defer></script>
+  </body>
+</html>

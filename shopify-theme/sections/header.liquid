@@ -1,0 +1,31 @@
+{% comment %} Converted from src/components/Header.tsx {% endcomment %}
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo">
+      {% if section.settings.logo != blank %}
+        <img src="{{ section.settings.logo | img_url: '200x' }}" alt="{{ shop.name }}">
+      {% else %}
+        {{ shop.name }}
+      {% endif %}
+    </a>
+    {% if section.settings.menu != blank %}
+      <nav class="main-nav">
+        <ul>
+          {% for link in linklists[section.settings.menu].links %}
+            <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+</header>
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {"type": "image_picker", "id": "logo", "label": "Logo"},
+    {"type": "link_list", "id": "menu", "label": "Main menu"}
+  ],
+  "presets": [{"name": "Header"}]
+}
+{% endschema %}

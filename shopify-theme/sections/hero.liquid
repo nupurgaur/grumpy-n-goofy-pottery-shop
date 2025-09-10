@@ -1,0 +1,24 @@
+{% comment %} Converted from src/components/Hero.tsx {% endcomment %}
+<section class="hero" style="{% if section.settings.background != blank %}background-image:url({{ section.settings.background | image_url }});{% endif %}">
+  <div class="container">
+    {% if section.settings.heading != blank %}<h1>{{ section.settings.heading }}</h1>{% endif %}
+    {% if section.settings.subheading != blank %}<p>{{ section.settings.subheading }}</p>{% endif %}
+    {% if section.settings.show_button %}
+      <a class="btn" href="{{ section.settings.button_link }}">{{ section.settings.button_text }}</a>
+    {% endif %}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    {"type": "text", "id": "heading", "label": "Heading", "default": "Handmade Pottery"},
+    {"type": "text", "id": "subheading", "label": "Subheading", "default": "Crafted with a grumpy grin and a goofy heart."},
+    {"type": "image_picker", "id": "background", "label": "Background image"},
+    {"type": "checkbox", "id": "show_button", "label": "Show button", "default": true},
+    {"type": "text", "id": "button_text", "label": "Button text", "default": "Shop now"},
+    {"type": "url", "id": "button_link", "label": "Button link", "default": "/collections/all"}
+  ],
+  "presets": [{"name": "Hero"}]
+}
+{% endschema %}

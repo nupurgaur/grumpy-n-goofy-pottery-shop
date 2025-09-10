@@ -1,0 +1,11 @@
+{% comment %} Converted from src/components/card-product analog {% endcomment %}
+<div class="card">
+  <a href="{{ product.url }}" class="product-image">
+    {% if product.featured_image %}
+      <img src="{{ product.featured_image | img_url: '500x' }}" alt="{{ product.title }}">
+    {% endif %}
+  </a>
+  <h3><a href="{{ product.url }}">{{ product.title }}</a></h3>
+  <p>{% render 'price', product: product %}</p>
+  {% render 'add-to-cart', product: product %}
+</div>

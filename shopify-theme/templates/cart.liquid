@@ -1,0 +1,29 @@
+{% comment %} Converted from cart page analog {% endcomment %}
+<h1>Your cart</h1>
+{% if cart.item_count == 0 %}
+  <p>Your cart is empty.</p>
+{% else %}
+<form action="/cart" method="post" novalidate>
+  <table class="cart-table">
+    <thead>
+      <tr><th>Product</th><th>Qty</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+      {% for item in cart.items %}
+        <tr>
+          <td>
+            <a href="{{ item.url }}">{{ item.product.title }}</a>
+          </td>
+          <td>
+            <input name="updates[{{ item.key }}]" value="{{ item.quantity }}" type="number" min="0">
+          </td>
+          <td>{{ item.final_line_price | money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>Subtotal: {{ cart.total_price | money }}</p>
+  <button type="submit" name="update">Update</button>
+  <button type="submit" name="checkout">Checkout</button>
+</form>
+{% endif %}

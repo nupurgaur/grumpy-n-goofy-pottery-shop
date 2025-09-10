@@ -1,0 +1,12 @@
+{% comment %} Converted from src/pages/Collection analog {% endcomment %}
+<h1>{{ collection.title }}</h1>
+{% if collection.description %}
+  <div class="rte">{{ collection.description }}</div>
+{% endif %}
+<div class="grid products">
+  {% for product in collection.products %}
+    {% render 'product-card', product: product %}
+  {% else %}
+    <p>No products found.</p>
+  {% endfor %}
+</div>

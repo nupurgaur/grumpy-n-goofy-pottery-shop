@@ -1,0 +1,14 @@
+{% comment %} Converted from src/templates/product analog {% endcomment %}
+<article class="product">
+  <div class="product-media">
+    {% if product.featured_image %}
+      <img src="{{ product.featured_image | img_url: '800x' }}" alt="{{ product.title }}">
+    {% endif %}
+  </div>
+  <div class="product-info">
+    <h1>{{ product.title }}</h1>
+    {% render 'price', product: product %}
+    <div class="rte">{{ product.description }}</div>
+    {% render 'add-to-cart', product: product %}
+  </div>
+</article>

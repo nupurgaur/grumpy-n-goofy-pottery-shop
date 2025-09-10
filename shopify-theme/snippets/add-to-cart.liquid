@@ -1,0 +1,8 @@
+{% comment %} Add to cart form using Shopify Cart API {% endcomment %}
+<form action="/cart/add" method="post" class="add-to-cart">
+  {% assign variant = product.selected_or_first_available_variant %}
+  <input type="hidden" name="id" value="{{ variant.id }}">
+  <button type="submit" {% unless variant.available %}disabled{% endunless %}>
+    {% if variant.available %}Add to cart{% else %}Sold out{% endif %}
+  </button>
+</form>

@@ -1,0 +1,22 @@
+{% comment %} Converted from src/components/Footer.tsx {% endcomment %}
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+    <ul class="social">
+      {% if section.settings.instagram != blank %}<li><a href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a></li>{% endif %}
+      {% if section.settings.facebook != blank %}<li><a href="{{ section.settings.facebook }}" target="_blank" rel="noopener">Facebook</a></li>{% endif %}
+      {% if section.settings.twitter != blank %}<li><a href="{{ section.settings.twitter }}" target="_blank" rel="noopener">X</a></li>{% endif %}
+    </ul>
+  </div>
+</footer>
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {"type": "url", "id": "instagram", "label": "Instagram URL"},
+    {"type": "url", "id": "facebook", "label": "Facebook URL"},
+    {"type": "url", "id": "twitter", "label": "X/Twitter URL"}
+  ],
+  "presets": [{"name": "Footer"}]
+}
+{% endschema %}

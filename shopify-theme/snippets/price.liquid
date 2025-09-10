@@ -1,0 +1,7 @@
+{% comment %} Price formatting snippet {% endcomment %}
+{% assign first_variant = product.selected_or_first_available_variant %}
+{% if first_variant.compare_at_price > first_variant.price %}
+  <span class="price"><span class="price-current">{{ first_variant.price | money }}</span> <s class="price-compare">{{ first_variant.compare_at_price | money }}</s></span>
+{% else %}
+  <span class="price">{{ first_variant.price | money }}</span>
+{% endif %}
