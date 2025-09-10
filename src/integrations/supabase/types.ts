@@ -50,12 +50,112 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          id: string
+          movement_type: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: number
+          quantity_change: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          movement_type: string
+          new_stock: number
+          notes?: string | null
+          previous_stock: number
+          product_id: number
+          quantity_change: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          movement_type?: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id?: number
+          quantity_change?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          image_url: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          low_stock_threshold: number
+          name: string
+          original_price: number | null
+          price: number
+          rating: number | null
+          review_count: number | null
+          stock_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          image_url: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          low_stock_threshold?: number
+          name: string
+          original_price?: number | null
+          price: number
+          rating?: number | null
+          review_count?: number | null
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          image_url?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          low_stock_threshold?: number
+          name?: string
+          original_price?: number | null
+          price?: number
+          rating?: number | null
+          review_count?: number | null
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_product_stock: {
+        Args: {
+          p_movement_type: string
+          p_notes?: string
+          p_product_id: number
+          p_quantity_change: number
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
