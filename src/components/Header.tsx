@@ -1,20 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-
-  const handleAuthAction = () => {
-    if (user) {
-      signOut();
-    } else {
-      navigate('/auth');
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -53,23 +45,38 @@ const Header = () => {
           <CartIcon />
           
           {/* Auth Button */}
-          <Button 
-            variant="ghost" 
-            onClick={handleAuthAction}
-            className="hidden sm:flex items-center space-x-2"
-          >
-            {user ? (
-              <>
+          {user ? (
+            <div className="flex items-center space-x-2">
+              {isAdmin && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                  className="hidden sm:flex items-center gap-1"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Admin</span>
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                onClick={signOut}
+                className="hidden sm:flex items-center space-x-2"
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
-              </>
-            ) : (
-              <>
-                <User className="h-4 w-4" />
-                <span>Sign In</span>
-              </>
-            )}
-          </Button>
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/auth')}
+              className="hidden sm:flex items-center space-x-2"
+            >
+              <User className="h-4 w-4" />
+              <span>Sign In</span>
+            </Button>
+          )}
           
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
