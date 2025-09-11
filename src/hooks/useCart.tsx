@@ -25,7 +25,7 @@ interface CartContextType {
     name: string;
     price: number;
     image: string;
-  }) => Promise<void>;
+  }, stockQuantity?: number) => Promise<void>;
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   removeItem: (productId: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -79,7 +79,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     name: string;
     price: number;
     image: string;
-  }) => {
+  }, stockQuantity?: number) => {
     if (!user) {
       toast({
         title: "Sign in required",
@@ -90,10 +90,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      // Check stock availability if provided
+      if (stockQuantity !== undefined && stockQuantity <= 0) {
+        toast({
+          title: "Out of stock",
+          description: `${product.name} is currently out of stock`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Check if item already exists
       const existingItem = items.find(item => item.product_id === product.id);
       
       if (existingItem) {
+        // Check if we can add one more to existing quantity
+        if (stockQuantity !== undefined && existingItem.quantity >= stockQuantity) {
+          toast({
+            title: "Insufficient stock",
+            description: `Only ${stockQuantity} items available`,
+            variant: "destructive"
+          });
+          return;
+        }
         await updateQuantity(product.id, existingItem.quantity + 1);
         return;
       }
@@ -115,6 +134,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
 
       setItems(prev => [...prev, data]);
+      
+      // Update stock when item is added to cart
+      if (stockQuantity !== undefined) {
+        await supabase.rpc('update_product_stock', {
+          p_product_id: product.id,
+          p_quantity_change: -1,
+          p_movement_type: 'sale',
+          p_notes: 'Added to cart'
+        });
+      }
+
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart`,
