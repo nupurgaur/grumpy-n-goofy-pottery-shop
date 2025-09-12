@@ -9,7 +9,9 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
-const App = () => (
+const App = () => {
+  console.log('App component is rendering - no React Query should be present');
+  return (
   <AuthProvider>
     <CartProvider>
       <TooltipProvider>
@@ -28,5 +30,6 @@ const App = () => (
     </CartProvider>
   </AuthProvider>
 );
+};
 
 export default App;
