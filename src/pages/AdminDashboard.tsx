@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, Plus, BarChart3, Users, ArrowLeft } from 'lucide-react';
+import { Package, Plus, BarChart3, Users, ArrowLeft, ShoppingCart } from 'lucide-react';
 import ProductManagement from '@/components/admin/ProductManagement';
 import InventoryOverview from '@/components/admin/InventoryOverview';
+import OrderManagement from '@/components/admin/OrderManagement';
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -100,8 +101,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="orders" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              Order Management
+            </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Product Management
@@ -111,6 +116,10 @@ const AdminDashboard = () => {
               Inventory Overview
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="orders">
+            <OrderManagement />
+          </TabsContent>
           
           <TabsContent value="products">
             <ProductManagement />
