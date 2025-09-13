@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Heart, Star, Package, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Heart, Star, Package, AlertTriangle, Eye } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useProducts } from "@/hooks/useProducts";
+import { useWishlist } from "@/hooks/useWishlist";
+import { ProductImageCarousel } from "@/components/ProductImageCarousel";
+import { ProductDetailDialog } from "@/components/ProductDetailDialog";
+import { useState } from "react";
 import mugImage from "@/assets/pottery-mug.jpg";
 import vaseImage from "@/assets/pottery-vase.jpg";
 import bowlImage from "@/assets/pottery-bowl.jpg";
@@ -19,6 +23,9 @@ const getProductImage = (imageUrl: string) => {
 const FeaturedProducts = () => {
   const { addItem } = useCart();
   const { products, loading, getStockStatus, isLowStock } = useProducts();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddToCart = (product: any) => {
     addItem({
@@ -27,6 +34,24 @@ const FeaturedProducts = () => {
       price: product.price,
       image: getProductImage(product.image_url)
     }, product.stock_quantity);
+  };
+
+  const handleWishlistToggle = async (product: any) => {
+    if (isInWishlist(product.id)) {
+      await removeFromWishlist(product.id);
+    } else {
+      await addToWishlist(product.id);
+    }
+  };
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedProduct(null);
   };
 
   const getStockBadge = (product: any) => {
@@ -101,14 +126,17 @@ const FeaturedProducts = () => {
             const isOutOfStock = stockStatus === 'out-of-stock';
             
             return (
-              <Card key={product.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden">
+              <Card key={product.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
                 <div className="relative overflow-hidden">
-                  <img
-                    src={getProductImage(product.image_url)}
+                  <ProductImageCarousel
+                    images={product.images && product.images.length > 0 
+                      ? product.images.map(img => getProductImage(img))
+                      : [getProductImage(product.image_url)]
+                    }
                     alt={product.name}
-                    className={`w-full h-64 object-cover group-hover:scale-110 transition-smooth ${
-                      isOutOfStock ? 'opacity-60 grayscale' : ''
-                    }`}
+                    className={isOutOfStock ? 'opacity-60 grayscale' : ''}
+                    showArrows={true}
+                    showDots={true}
                   />
                   {product.is_featured && (
                     <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
@@ -120,8 +148,14 @@ const FeaturedProducts = () => {
                     variant="ghost"
                     size="icon"
                     className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleWishlistToggle(product);
+                    }}
                   >
-                    <Heart className="h-4 w-4" />
+                    <Heart className={`h-4 w-4 ${
+                      isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''
+                    }`} />
                   </Button>
                 </div>
                 
@@ -174,24 +208,41 @@ const FeaturedProducts = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <span className="text-2xl font-bold text-brand-primary">
-                          ${product.price}
+                          ₹{product.price}
                         </span>
                         {product.original_price && (
                           <span className="text-sm text-muted-foreground line-through">
-                            ${product.original_price}
+                            ₹{product.original_price}
                           </span>
                         )}
                       </div>
-                      <Button 
-                        variant="accent" 
-                        size="sm" 
-                        className="group"
-                        onClick={() => handleAddToCart(product)}
-                        disabled={isOutOfStock}
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductClick(product);
+                          }}
+                          className="flex-1"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </Button>
+                        <Button 
+                          variant="accent" 
+                          size="sm" 
+                          className="group"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(product);
+                          }}
+                          disabled={isOutOfStock}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -207,6 +258,13 @@ const FeaturedProducts = () => {
           </Button>
         </div>
       </div>
+
+      {/* Product Detail Dialog */}
+      <ProductDetailDialog
+        product={selectedProduct}
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+      />
     </section>
   );
 };

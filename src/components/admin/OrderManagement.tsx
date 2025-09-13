@@ -84,7 +84,7 @@ const OrderManagement = () => {
                         <div className="text-sm text-muted-foreground">{order.customer_email}</div>
                       </div>
                     </TableCell>
-                    <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
+                    <TableCell>₹{Number(order.total_amount).toFixed(2)}</TableCell>
                     <TableCell>
                       <Select
                         value={order.status}
@@ -160,7 +160,7 @@ const OrderManagement = () => {
                                   <div>
                                     <h4 className="font-medium">Order Summary</h4>
                                     <div className="text-sm space-y-1">
-                                      <p>Total: ${Number(selectedOrder.total_amount).toFixed(2)}</p>
+                                      <p>Total: ₹{Number(selectedOrder.total_amount).toFixed(2)}</p>
                                       <p>Status: {selectedOrder.status}</p>
                                       <p>Payment: {selectedOrder.payment_status}</p>
                                     </div>
@@ -186,12 +186,12 @@ const OrderManagement = () => {
                                           <div>
                                             <p className="font-medium">{item.product_name}</p>
                                             <p className="text-sm text-muted-foreground">
-                                              ${Number(item.product_price).toFixed(2)} × {item.quantity}
+                                              ₹{Number(item.product_price).toFixed(2)} × {item.quantity}
                                             </p>
                                           </div>
                                         </div>
                                         <div className="font-medium">
-                                          ${Number(item.subtotal).toFixed(2)}
+                                          ₹{Number(item.subtotal).toFixed(2)}
                                         </div>
                                       </div>
                                     ))}

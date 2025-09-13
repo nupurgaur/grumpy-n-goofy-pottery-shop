@@ -329,10 +329,10 @@ const ProductManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        ${product.price}
+                        ₹{product.price}
                         {product.original_price && (
                           <div className="text-sm text-muted-foreground line-through">
-                            ${product.original_price}
+                            ₹{product.original_price}
                           </div>
                         )}
                       </div>

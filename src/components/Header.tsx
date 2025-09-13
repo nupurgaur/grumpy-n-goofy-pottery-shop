@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Settings } from "lucide-react";
+import { Menu, User, LogOut, Settings, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
+  const { wishlist } = useWishlist();
   const navigate = useNavigate();
 
   return (
@@ -43,6 +45,21 @@ const Header = () => {
         {/* Actions */}
         <div className="flex items-center space-x-4">
           <CartIcon />
+          
+          {/* Wishlist Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/wishlist')}
+            className="relative"
+          >
+            <Heart className="h-5 w-5" />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {wishlist.length}
+              </span>
+            )}
+          </Button>
           
           {/* Auth Button */}
           {user ? (
