@@ -9,6 +9,7 @@ export interface Product {
   price: number;
   original_price: number | null;
   image_url: string;
+  images: string[] | null;
   stock_quantity: number;
   low_stock_threshold: number;
   is_featured: boolean;

@@ -12,6 +12,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Package, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ImageUpload } from './ImageUpload';
 
 const ProductManagement = () => {
   const { products, loading, refreshProducts } = useProducts();
@@ -25,7 +26,7 @@ const ProductManagement = () => {
     description: '',
     price: '',
     original_price: '',
-    image_url: '',
+    images: [] as string[],
     stock_quantity: '',
     low_stock_threshold: '5',
     is_featured: false,
@@ -38,7 +39,7 @@ const ProductManagement = () => {
       description: '',
       price: '',
       original_price: '',
-      image_url: '',
+      images: [],
       stock_quantity: '',
       low_stock_threshold: '5',
       is_featured: false,
@@ -55,7 +56,8 @@ const ProductManagement = () => {
         description: formData.description || null,
         price: parseFloat(formData.price),
         original_price: formData.original_price ? parseFloat(formData.original_price) : null,
-        image_url: formData.image_url,
+        image_url: formData.images.length > 0 ? formData.images[0] : '',
+        images: formData.images,
         stock_quantity: parseInt(formData.stock_quantity),
         low_stock_threshold: parseInt(formData.low_stock_threshold),
         is_featured: formData.is_featured,
@@ -101,7 +103,7 @@ const ProductManagement = () => {
       description: product.description || '',
       price: product.price.toString(),
       original_price: product.original_price?.toString() || '',
-      image_url: product.image_url,
+      images: product.images || (product.image_url ? [product.image_url] : []),
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
       is_featured: product.is_featured,
@@ -179,16 +181,14 @@ const ProductManagement = () => {
                           required
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="image_url">Image URL *</Label>
-                        <Input
-                          id="image_url"
-                          value={formData.image_url}
-                          onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                          placeholder="https://example.com/image.jpg"
-                          required
-                        />
-                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <ImageUpload
+                        images={formData.images}
+                        onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+                        maxImages={5}
+                      />
                     </div>
                     
                     <div className="space-y-2">
@@ -307,11 +307,18 @@ const ProductManagement = () => {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="h-12 w-12 object-cover rounded"
-                        />
+                        <div className="relative">
+                          <img
+                            src={(product.images && product.images.length > 0) ? product.images[0] : product.image_url}
+                            alt={product.name}
+                            className="h-12 w-12 object-cover rounded"
+                          />
+                          {product.images && product.images.length > 1 && (
+                            <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              {product.images.length}
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <div className="font-medium">{product.name}</div>
                           {product.is_featured && (

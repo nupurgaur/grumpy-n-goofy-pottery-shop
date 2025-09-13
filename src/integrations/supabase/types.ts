@@ -199,6 +199,7 @@ export type Database = {
           description: string | null
           id: number
           image_url: string
+          images: string[] | null
           is_active: boolean | null
           is_featured: boolean | null
           low_stock_threshold: number
@@ -215,6 +216,7 @@ export type Database = {
           description?: string | null
           id?: number
           image_url: string
+          images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number
@@ -231,6 +233,7 @@ export type Database = {
           description?: string | null
           id?: number
           image_url?: string
+          images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number
