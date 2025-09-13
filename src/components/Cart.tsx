@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const CartIcon = () => {
   const { itemCount } = useCart();
@@ -29,6 +30,7 @@ export const CartIcon = () => {
 
 const CartContent = ({ onClose }: { onClose: () => void }) => {
   const { items, totalPrice, loading, updateQuantity, removeItem, clearCart } = useCart();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -83,11 +85,18 @@ const CartContent = ({ onClose }: { onClose: () => void }) => {
       <div className="border-t pt-4 space-y-4">
         <div className="flex items-center justify-between text-lg font-semibold">
           <span>Total:</span>
-          <span className="text-brand-primary">${totalPrice.toFixed(2)}</span>
+          <span className="text-brand-primary">₹{totalPrice.toFixed(2)}</span>
         </div>
         
         <div className="space-y-2">
-          <Button className="w-full" size="lg">
+          <Button 
+            className="w-full" 
+            size="lg"
+            onClick={() => {
+              onClose();
+              navigate('/checkout');
+            }}
+          >
             Proceed to Checkout
           </Button>
           <Button variant="outline" className="w-full" onClick={onClose}>
@@ -118,7 +127,7 @@ const CartItem = ({
       
       <div className="flex-1 space-y-1">
         <h4 className="font-medium text-sm">{item.product_name}</h4>
-        <p className="text-sm text-muted-foreground">${item.product_price}</p>
+        <p className="text-sm text-muted-foreground">₹{item.product_price}</p>
         
         <div className="flex items-center space-x-2">
           <Button
@@ -154,7 +163,7 @@ const CartItem = ({
       </div>
       
       <div className="text-right">
-        <p className="font-medium text-sm">${(item.product_price * item.quantity).toFixed(2)}</p>
+        <p className="font-medium text-sm">₹{(item.product_price * item.quantity).toFixed(2)}</p>
       </div>
     </div>
   );
