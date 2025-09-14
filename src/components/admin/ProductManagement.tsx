@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Package, AlertTriangle } from 'lucide-react';
@@ -20,12 +21,25 @@ const ProductManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
+  // Category options
+  const categories = [
+    { value: 'mugs', label: 'Mugs' },
+    { value: 'bowls', label: 'Bowls' },
+    { value: 'plates', label: 'Plates' },
+    { value: 'ceramic-clocks', label: 'Ceramic Clocks' },
+    { value: 'lamps', label: 'Lamps' },
+    { value: 'spoon-rests', label: 'Spoon Rests' },
+    { value: 'vases', label: 'Vases' },
+    { value: 'general', label: 'General' }
+  ];
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     original_price: '',
+    category: 'general',
     images: [] as string[],
     stock_quantity: '',
     low_stock_threshold: '5',
@@ -39,6 +53,7 @@ const ProductManagement = () => {
       description: '',
       price: '',
       original_price: '',
+      category: 'general',
       images: [],
       stock_quantity: '',
       low_stock_threshold: '5',
@@ -56,6 +71,7 @@ const ProductManagement = () => {
         description: formData.description || null,
         price: parseFloat(formData.price),
         original_price: formData.original_price ? parseFloat(formData.original_price) : null,
+        category: formData.category,
         image_url: formData.images.length > 0 ? formData.images[0] : '',
         images: formData.images,
         stock_quantity: parseInt(formData.stock_quantity),
@@ -103,6 +119,7 @@ const ProductManagement = () => {
       description: product.description || '',
       price: product.price.toString(),
       original_price: product.original_price?.toString() || '',
+      category: product.category || 'general',
       images: product.images || (product.image_url ? [product.image_url] : []),
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
@@ -180,6 +197,24 @@ const ProductManagement = () => {
                           placeholder="Handcrafted Pottery Bowl"
                           required
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category *</Label>
+                        <Select 
+                          value={formData.category} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category.value} value={category.value}>
+                                {category.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     
@@ -296,6 +331,7 @@ const ProductManagement = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
                   <TableHead>Status</TableHead>
@@ -326,6 +362,11 @@ const ProductManagement = () => {
                           )}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {categories.find(cat => cat.value === product.category)?.label || 'General'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div>

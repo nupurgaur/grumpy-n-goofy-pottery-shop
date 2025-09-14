@@ -8,6 +8,7 @@ export interface Product {
   description: string | null;
   price: number;
   original_price: number | null;
+  category: string;
   image_url: string;
   images: string[] | null;
   stock_quantity: number;
@@ -31,22 +32,28 @@ export interface InventoryMovement {
   created_at: string;
 }
 
-export const useProducts = () => {
+export const useProducts = (category?: string) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [category]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_active', true);
+      
+      if (category && category !== 'all') {
+        query = query.eq('category', category);
+      }
+      
+      const { data, error } = await query
         .order('is_featured', { ascending: false })
         .order('created_at', { ascending: true });
 

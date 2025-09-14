@@ -1,14 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Settings, Heart } from "lucide-react";
+import { Menu, User, LogOut, Settings, Heart, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
 import { useWishlist } from "@/hooks/useWishlist";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { wishlist } = useWishlist();
   const navigate = useNavigate();
+
+  const categories = [
+    { value: 'all', label: 'All Products', href: '#shop' },
+    { value: 'mugs', label: 'Mugs', href: '#shop?category=mugs' },
+    { value: 'bowls', label: 'Bowls', href: '#shop?category=bowls' },
+    { value: 'plates', label: 'Plates', href: '#shop?category=plates' },
+    { value: 'ceramic-clocks', label: 'Ceramic Clocks', href: '#shop?category=ceramic-clocks' },
+    { value: 'lamps', label: 'Lamps', href: '#shop?category=lamps' },
+    { value: 'spoon-rests', label: 'Spoon Rests', href: '#shop?category=spoon-rests' },
+    { value: 'vases', label: 'Vases', href: '#shop?category=vases' },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -31,9 +43,23 @@ const Header = () => {
           <a href="#home" className="text-foreground hover:text-brand-secondary transition-colors">
             Home
           </a>
-          <a href="#shop" className="text-foreground hover:text-brand-secondary transition-colors">
-            Shop
-          </a>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-brand-secondary transition-colors">
+              <span>Shop</span>
+              <ChevronDown className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              {categories.map((category) => (
+                <DropdownMenuItem key={category.value} asChild>
+                  <a href={category.href} className="cursor-pointer">
+                    {category.label}
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <a href="#about" className="text-foreground hover:text-brand-secondary transition-colors">
             About
           </a>
