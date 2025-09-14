@@ -1,12 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import heroImage from "@/assets/pottery-hero.jpg";
+import potteryTexture from "@/assets/pottery-texture-bg.jpg";
 
 const Hero = () => {
   return (
     <section id="home" className="relative min-h-[80vh] flex items-center overflow-hidden">
-      {/* Background with gradient overlay */}
-      <div className="absolute inset-0 hero-gradient opacity-10"></div>
+      {/* Pottery texture background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-30"
+        style={{ backgroundImage: `url(${potteryTexture})` }}
+      ></div>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 hero-gradient opacity-20"></div>
       
       <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative z-10">
         {/* Content */}
