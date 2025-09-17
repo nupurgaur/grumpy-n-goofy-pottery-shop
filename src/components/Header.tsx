@@ -34,7 +34,7 @@ const Header = () => {
           />
           <div>
             <h1 className="text-xl font-bold text-brand-primary">Grumpy 'n' Goofy</h1>
-            <p className="text-xs text-muted-foreground">Handcrafted Pottery</p>
+            <p className="text-xs text-muted-foreground">Sip your story</p>
           </div>
         </div>
 

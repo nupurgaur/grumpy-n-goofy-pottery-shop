@@ -11,6 +11,7 @@ import { useState } from "react";
 import mugImage from "@/assets/pottery-mug.jpg";
 import vaseImage from "@/assets/pottery-vase.jpg";
 import bowlImage from "@/assets/pottery-bowl.jpg";
+import textureBg from "@/assets/pottery-texture-bg.jpg";
 
 // Fallback images for products
 const getProductImage = (imageUrl: string) => {
@@ -78,7 +79,17 @@ const FeaturedProducts = () => {
 
   if (loading) {
     return (
-      <section id="shop" className="py-20 bg-muted/30">
+      <section
+        id="shop"
+        className="py-20 bg-muted/30"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url(${textureBg})`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '600px 600px',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'scroll'
+        }}
+      >
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">
@@ -107,7 +118,17 @@ const FeaturedProducts = () => {
     );
   }
   return (
-    <section id="shop" className="py-20 bg-muted/30">
+    <section
+      id="shop"
+      className="py-20 bg-muted/30"
+      style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url(${textureBg})`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '600px 600px',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'scroll'
+      }}
+    >
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
