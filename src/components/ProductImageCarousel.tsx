@@ -11,6 +11,7 @@ interface ProductImageCarouselProps {
   showArrows?: boolean;
   autoPlay?: boolean;
   autoPlayInterval?: number;
+  showCounter?: boolean;
 }
 
 export const ProductImageCarousel = ({
@@ -20,7 +21,8 @@ export const ProductImageCarousel = ({
   showDots = true,
   showArrows = true,
   autoPlay = false,
-  autoPlayInterval = 3000
+  autoPlayInterval = 3000,
+  showCounter = true
 }: ProductImageCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -60,7 +62,7 @@ export const ProductImageCarousel = ({
         <img
           src={images[0]}
           alt={alt}
-          className="w-full h-64 object-cover group-hover:scale-110 transition-smooth"
+          className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
         />
       </div>
     );
@@ -69,11 +71,11 @@ export const ProductImageCarousel = ({
   return (
     <div className={cn("relative overflow-hidden group", className)}>
       {/* Main Image */}
-      <div className="relative">
+      <div className="relative h-full">
         <img
           src={images[currentIndex]}
           alt={`${alt} - Image ${currentIndex + 1}`}
-          className="w-full h-64 object-cover group-hover:scale-110 transition-smooth"
+          className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
         />
         
         {/* Navigation Arrows */}
@@ -118,9 +120,11 @@ export const ProductImageCarousel = ({
       )}
 
       {/* Image Counter */}
-      <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-        {currentIndex + 1} / {images.length}
-      </div>
+      {showCounter && images.length > 1 && (
+        <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
+          {currentIndex + 1} / {images.length}
+        </div>
+      )}
     </div>
   );
 };

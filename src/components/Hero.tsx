@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import heroImage from "@/assets/pottery-hero.jpg";
 import potteryTexture from "@/assets/pottery-texture-bg.jpg";
+import mugImage from "@/assets/pottery-mug.jpg";
+import vaseImage from "@/assets/pottery-vase.jpg";
+import bowlImage from "@/assets/pottery-bowl.jpg";
+import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 
 const Hero = () => {
   // Subtle repeating mugs and vases checker pattern (SVG) for background
@@ -105,16 +109,30 @@ const Hero = () => {
               <div className="text-2xl font-bold text-brand-primary">Quality First</div>
               <div className="text-sm text-muted-foreground">No mass-production, only unique pieces</div>
             </div>
+            <div>
+              <div className="text-2xl font-bold text-brand-primary">Sustainable</div>
+              <div className="text-sm text-muted-foreground">Eco-friendly materials and practices</div>
+            </div>
           </div>
         </div>
 
-        {/* Hero Image */}
+        {/* Hero Image Carousel */}
         <div className="relative">
           <div className="relative overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth">
-            <img
-              src={heroImage}
+            <ProductImageCarousel
+              images={[
+                heroImage,
+                mugImage,
+                vaseImage,
+                bowlImage
+              ]}
               alt="Beautiful handcrafted pottery collection"
-              className="w-full h-[500px] object-cover"
+              className="w-full h-[500px]"
+              showArrows={true}
+              showDots={true}
+              autoPlay={true}
+              autoPlayInterval={4000}
+              showCounter={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
           </div>

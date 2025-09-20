@@ -11,9 +11,28 @@ import { useState } from "react";
 import mugImage from "@/assets/pottery-mug.jpg";
 import vaseImage from "@/assets/pottery-vase.jpg";
 import bowlImage from "@/assets/pottery-bowl.jpg";
+import heroImage from "@/assets/pottery-hero.jpg";
 import textureBg from "@/assets/pottery-texture-bg.jpg";
 
-// Fallback images for products
+// Consistent fallback images for all products
+const getProductImages = (product: any) => {
+  // Use a consistent set of images for all products
+  const consistentImages = [mugImage, vaseImage, bowlImage, heroImage];
+  
+  // If product has images, use them, otherwise use consistent fallbacks
+  if (product.images && product.images.length > 0) {
+    return product.images.map(img => {
+      if (img.includes('pottery-mug')) return mugImage;
+      if (img.includes('pottery-vase')) return vaseImage;
+      if (img.includes('pottery-bowl')) return bowlImage;
+      return img;
+    });
+  }
+  
+  // Return consistent fallback images
+  return consistentImages;
+};
+
 const getProductImage = (imageUrl: string) => {
   if (imageUrl.includes('pottery-mug')) return mugImage;
   if (imageUrl.includes('pottery-vase')) return vaseImage;
@@ -150,10 +169,7 @@ const FeaturedProducts = () => {
               <Card key={product.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
                 <div className="relative overflow-hidden">
                   <ProductImageCarousel
-                    images={product.images && product.images.length > 0 
-                      ? product.images.map(img => getProductImage(img))
-                      : [getProductImage(product.image_url)]
-                    }
+                    images={getProductImages(product)}
                     alt={product.name}
                     className={isOutOfStock ? 'opacity-60 grayscale' : ''}
                     showArrows={true}
