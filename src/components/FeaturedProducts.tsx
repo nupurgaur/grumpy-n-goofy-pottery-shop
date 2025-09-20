@@ -167,11 +167,11 @@ const FeaturedProducts = () => {
             
             return (
               <Card key={product.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden aspect-square">
                   <ProductImageCarousel
                     images={getProductImages(product)}
                     alt={product.name}
-                    className={isOutOfStock ? 'opacity-60 grayscale' : ''}
+                    className={`w-full h-full ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                     showArrows={true}
                     showDots={true}
                   />
