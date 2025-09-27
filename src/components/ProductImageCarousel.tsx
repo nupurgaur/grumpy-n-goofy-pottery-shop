@@ -85,7 +85,10 @@ export const ProductImageCarousel = ({
               variant="ghost"
               size="icon"
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={goToPrevious}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -93,7 +96,10 @@ export const ProductImageCarousel = ({
               variant="ghost"
               size="icon"
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={goToNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -113,7 +119,10 @@ export const ProductImageCarousel = ({
                   ? "bg-primary"
                   : "bg-background/50 hover:bg-background/80"
               )}
-              onClick={() => goToSlide(index)}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToSlide(index);
+              }}
             />
           ))}
         </div>
@@ -121,7 +130,7 @@ export const ProductImageCarousel = ({
 
       {/* Image Counter */}
       {showCounter && images.length > 1 && (
-        <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
+        <div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
           {currentIndex + 1} / {images.length}
         </div>
       )}

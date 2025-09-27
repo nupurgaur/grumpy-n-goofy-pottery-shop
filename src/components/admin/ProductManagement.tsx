@@ -175,7 +175,7 @@ const ProductManagement = () => {
                   Add Product
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -186,36 +186,35 @@ const ProductManagement = () => {
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Product Name *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Handcrafted Pottery Bowl"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Category *</Label>
-                        <Select 
-                          value={formData.category} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.value} value={category.value}>
-                                {category.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="space-y-3 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Product Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Handcrafted Pottery Bowl"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category *</Label>
+                      <Select 
+                        value={formData.category} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.value} value={category.value}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
@@ -233,11 +232,11 @@ const ProductManagement = () => {
                         value={formData.description}
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                         placeholder="Beautiful handcrafted pottery bowl..."
-                        rows={3}
+                        rows={2}
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="price">Price *</Label>
                         <Input
@@ -263,7 +262,7 @@ const ProductManagement = () => {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="stock_quantity">Stock Quantity *</Label>
                         <Input
@@ -287,14 +286,14 @@ const ProductManagement = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
                         <Switch
                           id="is_featured"
                           checked={formData.is_featured}
                           onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
                         />
-                        <Label htmlFor="is_featured">Featured Product</Label>
+                        <Label htmlFor="is_featured" className="text-sm">Featured</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Switch
@@ -302,13 +301,13 @@ const ProductManagement = () => {
                           checked={formData.is_active}
                           onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                         />
-                        <Label htmlFor="is_active">Active</Label>
+                        <Label htmlFor="is_active" className="text-sm">Active</Label>
                       </div>
                     </div>
                   </div>
                   
-                  <DialogFooter>
-                    <Button type="submit">
+                  <DialogFooter className="flex-shrink-0 bg-background pt-3 border-t">
+                    <Button type="submit" className="w-full">
                       {editingProduct ? 'Update Product' : 'Add Product'}
                     </Button>
                   </DialogFooter>

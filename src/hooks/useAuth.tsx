@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -74,12 +74,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
+        // Handle specific error cases
+        if (error.message.includes('User already registered') || 
+            error.message.includes('already been registered') ||
+            error.message.includes('already exists') ||
+            error.message.includes('duplicate key')) {
+          toast({
+            title: "Email already exists",
+            description: "An account with this email already exists. Please sign in instead.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Password should be at least')) {
+          toast({
+            title: "Password too short",
+            description: "Password must be at least 6 characters long.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Invalid email')) {
+          toast({
+            title: "Invalid email",
+            description: "Please enter a valid email address.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Sign up failed",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
+        return { error };
+      }
+
+      // Check if user was actually created
+      if (!data.user) {
         toast({
-          title: "Sign up failed",
-          description: error.message,
+          title: "Email already exists",
+          description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive"
         });
-        return { error };
+        return { error: { message: "Email already exists" } };
+      }
+
+      // NEW: Check if identities array is empty (indicates existing user)
+      if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        toast({
+          title: "Email already exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive"
+        });
+        return { error: { message: "Email already exists" } };
+      }
+
+      // Check if user is already confirmed (means email exists)
+      if (data.user && data.user.email_confirmed_at) {
+        toast({
+          title: "Email already exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive"
+        });
+        return { error: { message: "Email already exists" } };
       }
 
       toast({
@@ -106,11 +160,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive"
-        });
+        // Handle specific sign-in error cases
+        if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Sign in failed",
+            description: "Invalid email or password. Please check your credentials.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your email and click the confirmation link.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Sign in failed",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
         return { error };
       }
 
