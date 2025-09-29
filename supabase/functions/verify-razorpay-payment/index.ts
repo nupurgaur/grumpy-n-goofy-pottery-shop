@@ -1,15 +1,41 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { createHash } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
+
+async function hmacSha256Hex(key: string, data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(key),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(data));
+  const bytes = new Uint8Array(signature);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i].toString(16).padStart(2, '0');
+  }
+  return hex;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ success: false, error: 'Method Not Allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -21,6 +47,13 @@ serve(async (req) => {
       cart_items 
     } = await req.json();
 
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return new Response(JSON.stringify({ success: false, error: 'Missing Razorpay fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -29,24 +62,21 @@ serve(async (req) => {
       throw new Error('Missing required environment variables');
     }
 
-    // Verify payment signature
     const text = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expectedSignature = createHash("sha256")
-      .update(text, "utf8")
-      .update(razorpayKeySecret, "utf8")
-      .toString("hex");
+    const expectedSignature = await hmacSha256Hex(razorpayKeySecret, text);
 
     if (expectedSignature !== razorpay_signature) {
       console.error('Payment signature verification failed');
-      throw new Error('Invalid payment signature');
+      console.error('Expected:', expectedSignature);
+      console.error('Received:', razorpay_signature);
+      return new Response(JSON.stringify({ success: false, error: 'Invalid payment signature' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('Payment signature verified successfully');
-
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    // Create order in database
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -70,7 +100,6 @@ serve(async (req) => {
       throw new Error('Failed to create order');
     }
 
-    // Create order items
     const orderItems = cart_items.map((item: any) => ({
       order_id: order.id,
       product_id: item.product_id,
@@ -90,7 +119,6 @@ serve(async (req) => {
       throw new Error('Failed to create order items');
     }
 
-    // Clear user's cart
     const { error: cartError } = await supabase
       .from('cart_items')
       .delete()
@@ -98,10 +126,8 @@ serve(async (req) => {
 
     if (cartError) {
       console.error('Error clearing cart:', cartError);
-      // Don't throw error as order is already created
     }
 
-    // Update product stock
     for (const item of cart_items) {
       const { error: stockError } = await supabase.rpc('update_product_stock', {
         p_product_id: item.product_id,
@@ -112,11 +138,8 @@ serve(async (req) => {
 
       if (stockError) {
         console.error('Error updating stock for product:', item.product_id, stockError);
-        // Continue with other products
       }
     }
-
-    console.log('Order created successfully:', order.id);
 
     return new Response(JSON.stringify({
       success: true,
@@ -131,7 +154,7 @@ serve(async (req) => {
     console.error('Error in verify-razorpay-payment function:', error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message 
+      error: (error as Error).message 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
