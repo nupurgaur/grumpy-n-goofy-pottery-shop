@@ -141,6 +141,46 @@ serve(async (req) => {
       }
     }
 
+    // Update order with fulfillment status and address snapshot
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({
+        fulfillment_status: 'pending',
+        address_snapshot: {
+          address: order_details.shipping_address,
+          city: '',
+          state: '',
+          pincode: '',
+          phone: order_details.customer_phone || ''
+        }
+      })
+      .eq('id', order.id);
+
+    if (updateError) {
+      console.error('Error updating order fulfillment status:', updateError);
+    }
+
+    // Automatically create Shiprocket shipment (async, don't wait for response)
+    try {
+      const shiprocketResponse = await fetch(`${supabaseUrl}/functions/v1/shiprocket-create-order`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceRoleKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_id: order.id })
+      });
+
+      if (!shiprocketResponse.ok) {
+        console.error('Failed to create Shiprocket shipment:', await shiprocketResponse.text());
+      } else {
+        console.log('Shiprocket shipment created successfully for order:', order.id);
+      }
+    } catch (shiprocketError) {
+      console.error('Error creating Shiprocket shipment:', shiprocketError);
+      // Don't fail the order creation if Shiprocket fails
+    }
+
     return new Response(JSON.stringify({
       success: true,
       order_id: order.id,

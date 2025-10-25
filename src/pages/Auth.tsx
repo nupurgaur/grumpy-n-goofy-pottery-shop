@@ -6,15 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
 
@@ -149,7 +147,7 @@ const Auth = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         value={password}
-                        onChange={handlePasswordChange}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                         className="pr-10"
                       />
@@ -158,7 +156,7 @@ const Auth = () => {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={togglePasswordVisibility}
+                        onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -206,7 +204,7 @@ const Auth = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Create a password"
                         value={password}
-                        onChange={handlePasswordChange}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                         className="pr-10"
                       />
@@ -215,7 +213,7 @@ const Auth = () => {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={togglePasswordVisibility}
+                        onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -224,18 +222,6 @@ const Auth = () => {
                         )}
                       </Button>
                     </div>
-                    {passwordError && (
-                      <div className="flex items-center gap-2 text-sm text-red-500">
-                        <XCircle className="h-4 w-4" />
-                        {passwordError}
-                      </div>
-                    )}
-                    {password && !passwordError && (
-                      <div className="flex items-center gap-2 text-sm text-green-500">
-                        <CheckCircle className="h-4 w-4" />
-                        Password looks good!
-                      </div>
-                    )}
                   </div>
                   <Button 
                     type="submit" 

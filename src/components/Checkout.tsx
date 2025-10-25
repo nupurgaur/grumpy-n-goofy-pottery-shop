@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 declare global {
   interface Window {
@@ -28,6 +29,7 @@ const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CheckoutFormData>({
     customerName: '',
@@ -162,6 +164,11 @@ const Checkout = () => {
               shippingAddress: '',
               billingAddress: ''
             });
+
+            // Redirect to orders page after a short delay
+            setTimeout(() => {
+              navigate('/orders');
+            }, 2000);
 
           } catch (error: any) {
             console.error('Payment verification error:', error);

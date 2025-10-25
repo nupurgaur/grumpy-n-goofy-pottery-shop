@@ -10,6 +10,9 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import Checkout from "./pages/Checkout";
 import Wishlist from "./pages/Wishlist";
+import Orders from "./pages/Orders";
+import OrderDetail from "./pages/OrderDetail";
+import ReturnRequest from "./pages/ReturnRequest";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -28,6 +31,9 @@ const App = () => {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/:orderId" element={<OrderDetail />} />
+            <Route path="/orders/:orderId/return" element={<ReturnRequest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
