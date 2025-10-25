@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Settings, Heart, ChevronDown } from "lucide-react";
+import { Menu, User, LogOut, Settings, Heart, ChevronDown, Package } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
 import { useWishlist } from "@/hooks/useWishlist";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -40,9 +40,9 @@ const Header = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#home" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/" className="text-foreground hover:text-brand-secondary transition-colors">
             Home
-          </a>
+          </Link>
           
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-brand-secondary transition-colors">
@@ -52,25 +52,37 @@ const Header = () => {
             <DropdownMenuContent align="start" className="w-48">
               {categories.map((category) => (
                 <DropdownMenuItem key={category.value} asChild>
-                  <a href={category.href} className="cursor-pointer">
+                  <Link to="/" className="cursor-pointer">
                     {category.label}
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <a href="#about" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/#about" className="text-foreground hover:text-brand-secondary transition-colors">
             About
-          </a>
-          <a href="#contact" className="text-foreground hover:text-brand-secondary transition-colors">
+          </Link>
+          <Link to="/#contact" className="text-foreground hover:text-brand-secondary transition-colors">
             Contact
-          </a>
+          </Link>
         </nav>
 
         {/* Actions */}
         <div className="flex items-center space-x-4">
           <CartIcon />
+          
+          {/* Orders Button */}
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/orders')}
+              className="relative"
+            >
+              <Package className="h-5 w-5" />
+            </Button>
+          )}
           
           {/* Wishlist Button */}
           <Button
