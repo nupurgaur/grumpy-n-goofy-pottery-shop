@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Coffee, Palette, Users } from "lucide-react";
 
@@ -26,6 +27,7 @@ const features = [
 ];
 
 const About = () => {
+  const navigate = useNavigate();
   return (
     <section id="about" className="py-20">
       <div className="container mx-auto px-4">
@@ -34,12 +36,12 @@ const About = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-6">
-                Where Grumpy Meets Goofy
+                Where Goofy Meets Grumpy
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p className="text-lg">
                   Started in a tiny studio with clay-covered hands and a big dream, 
-                  Grumpy 'n' Goofy brings you pottery that's anything but ordinary.
+                  Goofy 'n' Grumpy brings you pottery that's anything but ordinary.
                 </p>
                 <p>
                   We believe that functional art should make you smile - whether you're 
@@ -53,7 +55,7 @@ const About = () => {
               </div>
             </div>
 
-            <Button variant="quirky" size="lg">
+            <Button variant="quirky" size="lg" onClick={() => navigate('/artist')}>
               Meet the Artist
             </Button>
           </div>

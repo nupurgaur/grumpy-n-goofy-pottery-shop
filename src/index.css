@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Grumpy 'n' Goofy Pottery Design System
+/* Goofy 'n' Grumpy Pottery Design System
 All colors MUST be HSL. Inspired by the quirky brand personality.
 */
 
@@ -149,6 +149,21 @@ All colors MUST be HSL. Inspired by the quirky brand personality.
 
   .text-brand-accent {
     color: hsl(var(--accent-dark));
+  }
+
+  /* Brand theming for content blocks */
+  .prose h1,
+  .prose h2,
+  .prose h3 {
+    color: hsl(var(--primary));
+  }
+
+  .prose a {
+    color: hsl(var(--secondary));
+  }
+
+  .prose hr {
+    border-color: hsl(var(--secondary));
   }
 
   /* Animations */

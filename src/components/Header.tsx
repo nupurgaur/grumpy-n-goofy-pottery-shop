@@ -12,31 +12,31 @@ const Header = () => {
   const navigate = useNavigate();
 
   const categories = [
-    { value: 'all', label: 'All Products', href: '#shop' },
-    { value: 'mugs', label: 'Mugs', href: '#shop?category=mugs' },
-    { value: 'bowls', label: 'Bowls', href: '#shop?category=bowls' },
-    { value: 'plates', label: 'Plates', href: '#shop?category=plates' },
-    { value: 'ceramic-clocks', label: 'Ceramic Clocks', href: '#shop?category=ceramic-clocks' },
-    { value: 'lamps', label: 'Lamps', href: '#shop?category=lamps' },
-    { value: 'spoon-rests', label: 'Spoon Rests', href: '#shop?category=spoon-rests' },
-    { value: 'vases', label: 'Vases', href: '#shop?category=vases' },
+    { value: 'all', label: 'All Products' },
+    { value: 'mugs', label: 'Mugs' },
+    { value: 'bowls', label: 'Bowls' },
+    { value: 'plates', label: 'Plates' },
+    { value: 'ceramic-clocks', label: 'Ceramic Clocks' },
+    { value: 'lamps', label: 'Lamps' },
+    { value: 'spoon-rests', label: 'Spoon Rests' },
+    { value: 'vases', label: 'Vases' },
   ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2">
           <img 
             src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-            alt="Grumpy 'n' Goofy Logo" 
-            className="h-12 w-12"
+            alt="Goofy 'n' Grumpy Logo" 
+            className="h-16 w-16"
           />
           <div>
-            <h1 className="text-xl font-bold text-brand-primary">Grumpy 'n' Goofy</h1>
-            <p className="text-xs text-muted-foreground">Sip your story</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-brand-primary">Goofy 'n' Grumpy</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Made of moods & mud</p>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
@@ -52,7 +52,10 @@ const Header = () => {
             <DropdownMenuContent align="start" className="w-48">
               {categories.map((category) => (
                 <DropdownMenuItem key={category.value} asChild>
-                  <Link to="/" className="cursor-pointer">
+                  <Link
+                    to={`/?category=${encodeURIComponent(category.value)}#shop`}
+                    className="cursor-pointer"
+                  >
                     {category.label}
                   </Link>
                 </DropdownMenuItem>
@@ -63,7 +66,7 @@ const Header = () => {
           <Link to="/#about" className="text-foreground hover:text-brand-secondary transition-colors">
             About
           </Link>
-          <Link to="/#contact" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/contact" className="text-foreground hover:text-brand-secondary transition-colors">
             Contact
           </Link>
         </nav>

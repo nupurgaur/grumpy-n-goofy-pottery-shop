@@ -15,7 +15,7 @@ Add these environment variables to your Supabase project:
 ### Supabase Secrets (for Edge Functions)
 ```bash
 # Shiprocket API Credentials
-SHIPROCKET_EMAIL=grumpyngoofy@gmail.com
+SHIPROCKET_EMAIL=goofyngrumpy@gmail.com
 SHIPROCKET_PASSWORD=Rupun#1234
 
 # Optional: Webhook secret for verification

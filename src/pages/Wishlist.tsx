@@ -161,46 +161,18 @@ const Wishlist = () => {
 
               return (
                 <Card key={item.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
-                  <div className="relative overflow-hidden">
+                  <div className="relative h-64 w-full overflow-hidden bg-muted flex items-center justify-center">
                     <ProductImageCarousel
                       images={product.images && product.images.length > 0 
                         ? product.images.map(img => getProductImage(img))
                         : [getProductImage(product.image_url)]
                       }
                       alt={product.name}
-                      className={isOutOfStock ? 'opacity-60 grayscale' : ''}
+                      className={`h-64 w-full object-cover ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                       showArrows={true}
                       showDots={true}
                     />
-                    {product.is_featured && (
-                      <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
-                        Featured
-                      </Badge>
-                    )}
-                    {isOutOfStock && (
-                      <Badge variant="destructive" className="absolute top-4 right-14">
-                        <Package className="h-3 w-3 mr-1" />
-                        Out of Stock
-                      </Badge>
-                    )}
-                    {isLowStock && !isOutOfStock && (
-                      <Badge variant="secondary" className="absolute top-4 right-14 bg-yellow-500 text-yellow-50">
-                        Low Stock ({product.stock_quantity})
-                      </Badge>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveFromWishlist(product.id);
-                      }}
-                    >
-                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                    </Button>
                   </div>
-                  
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       {/* Rating */}
@@ -221,7 +193,6 @@ const Wishlist = () => {
                           {product.rating} ({product.review_count})
                         </span>
                       </div>
-
                       {/* Product Info */}
                       <div>
                         <h3 className="text-xl font-semibold text-brand-primary mb-2">
@@ -231,7 +202,6 @@ const Wishlist = () => {
                           {product.description}
                         </p>
                       </div>
-
                       {/* Stock Status */}
                       <div className="flex items-center space-x-2">
                         <Package className="h-4 w-4 text-muted-foreground" />
@@ -245,7 +215,6 @@ const Wishlist = () => {
                            `${product.stock_quantity} in stock`}
                         </span>
                       </div>
-
                       {/* Price and Actions */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
