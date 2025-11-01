@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, XCircle } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
 
@@ -52,19 +54,19 @@ const Auth = () => {
     return true;
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
     validateEmail(value);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
     validatePassword(value);
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
     
@@ -80,7 +82,7 @@ const Auth = () => {
     setIsLoading(false);
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
     
@@ -105,11 +107,11 @@ const Auth = () => {
         <div className="text-center mb-8">
           <img 
             src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-            alt="Grumpy 'n' Goofy Logo" 
+            alt="Goofy 'n' Grumpy Logo" 
             className="h-16 w-16 mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-brand-primary">Grumpy 'n' Goofy</h1>
-          <p className="text-muted-foreground">Handcrafted Pottery</p>
+          <h1 className="text-2xl font-bold text-brand-primary">Goofy 'n' Grumpy</h1>
+          <p className="text-muted-foreground">Made of moods & mud</p>
         </div>
 
         <Card className="shadow-card">

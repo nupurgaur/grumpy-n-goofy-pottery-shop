@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Mail, Phone, MapPin, Instagram, Facebook, Twitter } from "lucide-react"; 
+import { Heart, Mail, Phone, MapPin, Instagram, Youtube } from "lucide-react"; 
 
 const Footer = () => {
   return (
@@ -11,12 +11,12 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-                alt="Grumpy 'n' Goofy Logo" 
-                className="h-10 w-10 brightness-0 invert"
+                alt="Goofy 'n' Grumpy Logo" 
+                className="h-10 w-10"
               />
               <div>
-                <h3 className="text-xl font-bold">Grumpy 'n' Goofy</h3>
-                <p className="text-sm text-primary-foreground/80">Handcrafted Pottery</p>
+                <h3 className="text-xl font-bold">Goofy 'n' Grumpy</h3>
+                <p className="text-sm text-primary-foreground/80">Made of moods & mud</p>
               </div>
             </div>
             <p className="text-primary-foreground/80">
@@ -29,23 +29,43 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {['Home', 'Shop', 'About', 'Contact', 'Care Instructions', 'Returns'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a href="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Home</a>
+              </li>
+              <li>
+                <a href="/?category=all#shop" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Shop</a>
+              </li>
+              <li>
+                <a href="/#about" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">About</a>
+              </li>
+              <li>
+                <a href="/refund-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Refund Policy</a>
+              </li>
+              <li>
+                <a href="/shipping-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Shipping Policy</a>
+              </li>
+              <li>
+                <a href="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Privacy Policy</a>
+              </li>
+              <li>
+                <a href="/contact" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Contact Us</a>
+              </li>
+              <li>
+                <a href="/terms-and-conditions" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Terms & Conditions</a>
+              </li>
+              <li>
+                <a href="/cancellation-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Cancellation Policy</a>
+              </li>
             </ul>
           </div>
 
           {/* Contact */}
-          <div>
+          <div id="contact">
             <h4 className="text-lg font-semibold mb-4">Get in Touch</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">hello@grumpyngoofy.com</span>
+                <span className="text-primary-foreground/80">goofyngrumpy@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-primary-foreground/80" />
@@ -87,16 +107,21 @@ const Footer = () => {
 
           {/* Social Links */}
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            {[Instagram, Facebook, Twitter].map((Icon, index) => (
-              <Button key={index} variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground">
-                <Icon className="h-5 w-5" />
-              </Button>
+            {[
+              { Icon: Instagram, href: "https://www.instagram.com/grumpy_and_goofy/", label: "Instagram" },
+              { Icon: Youtube, href: "https://www.youtube.com/channel/UCwve4LS858Se5FqKv9xYisA", label: "YouTube" }
+            ].map(({ Icon, href, label }, index) => (
+              <a key={index} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Button variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground">
+                  <Icon className="h-5 w-5" />
+                </Button>
+              </a>
             ))}
           </div>
         </div>
 
         <div className="text-center text-primary-foreground/60 text-sm mt-4">
-          © 2024 Grumpy 'n' Goofy. All rights reserved.
+          © 2024 Goofy 'n' Grumpy. All rights reserved.
         </div>
       </div>
     </footer>

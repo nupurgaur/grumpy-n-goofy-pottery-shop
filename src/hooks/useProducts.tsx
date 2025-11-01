@@ -19,6 +19,11 @@ export interface Product {
   review_count: number;
   created_at: string;
   updated_at: string;
+  // Added admin-editable fields:
+  dimensions?: string;
+  weight?: string;
+  care?: string;
+  origin?: string;
 }
 
 export interface InventoryMovement {
@@ -32,14 +37,14 @@ export interface InventoryMovement {
   created_at: string;
 }
 
-export const useProducts = (category?: string) => {
+export const useProducts = (category?: string, options?: { featuredOnly?: boolean }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadProducts();
-  }, [category]);
+  }, [category, options?.featuredOnly]);
 
   const loadProducts = async () => {
     try {
@@ -51,6 +56,9 @@ export const useProducts = (category?: string) => {
       
       if (category && category !== 'all') {
         query = query.eq('category', category);
+      }
+      if (options?.featuredOnly) {
+        query = query.eq('is_featured', true);
       }
       
       const { data, error } = await query

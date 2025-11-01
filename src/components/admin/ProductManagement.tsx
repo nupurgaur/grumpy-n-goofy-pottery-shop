@@ -44,7 +44,11 @@ const ProductManagement = () => {
     stock_quantity: '',
     low_stock_threshold: '5',
     is_featured: false,
-    is_active: true
+    is_active: true,
+    dimensions: '',
+    weight: '',
+    care: 'Microwave safe',
+    origin: 'Handcrafted in India',
   });
 
   const resetForm = () => {
@@ -58,7 +62,11 @@ const ProductManagement = () => {
       stock_quantity: '',
       low_stock_threshold: '5',
       is_featured: false,
-      is_active: true
+      is_active: true,
+      dimensions: '',
+      weight: '',
+      care: 'Microwave safe',
+      origin: 'Handcrafted in India',
     });
   };
 
@@ -77,7 +85,11 @@ const ProductManagement = () => {
         stock_quantity: parseInt(formData.stock_quantity),
         low_stock_threshold: parseInt(formData.low_stock_threshold),
         is_featured: formData.is_featured,
-        is_active: formData.is_active
+        is_active: formData.is_active,
+        dimensions: formData.dimensions,
+        weight: formData.weight,
+        care: formData.care,
+        origin: formData.origin,
       };
 
       let error;
@@ -124,7 +136,11 @@ const ProductManagement = () => {
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
       is_featured: product.is_featured,
-      is_active: product.is_active
+      is_active: product.is_active,
+      dimensions: product.dimensions || '',
+      weight: product.weight || '',
+      care: product.care || 'Microwave safe',
+      origin: product.origin || 'Handcrafted in India',
     });
     setIsAddDialogOpen(true);
   };
@@ -233,6 +249,34 @@ const ProductManagement = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                         placeholder="Beautiful handcrafted pottery bowl..."
                         rows={2}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="dimensions">Dimensions</Label>
+                      <Input
+                        id="dimensions"
+                        value={formData.dimensions}
+                        onChange={e => setFormData(prev => ({ ...prev, dimensions: e.target.value }))}
+                        placeholder={'e.g. 8" H x 6" W x 4" D'}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weight">Weight</Label>
+                      <Input
+                        id="weight"
+                        value={formData.weight}
+                        onChange={e => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                        placeholder="e.g. 530g or 1.2 lbs"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="care">Care</Label>
+                      <Input
+                        id="care"
+                        value={formData.care}
+                        onChange={e => setFormData(prev => ({ ...prev, care: e.target.value }))}
+                        placeholder="e.g. Microwave safe"
                       />
                     </div>
                     

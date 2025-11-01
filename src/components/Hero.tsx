@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import heroImage from "@/assets/pottery-hero.jpg";
-import potteryTexture from "@/assets/pottery-texture-bg.jpg";
-import mugImage from "@/assets/pottery-mug.jpg";
-import vaseImage from "@/assets/pottery-vase.jpg";
-import bowlImage from "@/assets/pottery-bowl.jpg";
+import heroImage from "@/assets/IMG_20250929_021501.jpg";
+import potteryTexture from "@/assets/IMG20250927152142.jpg";
+import mugImage from "@/assets/IMG20250927153335.jpg";
+import vaseImage from "@/assets/IMG20250927152142.jpg";
+import bowlImage from "@/assets/IMG20250927153430.jpg";
+import potteryTexture2 from "@/assets/IMG20250927151704.jpg";
+import potteryTexture3 from "@/assets/IMG20250927152654.jpg";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 
 const Hero = () => {
@@ -73,7 +75,7 @@ const Hero = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2 text-brand-secondary">
               <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-medium">Sip your story</span>
+              <span className="text-sm font-medium">Made of moods & mud</span>
             </div>
             
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
@@ -89,13 +91,13 @@ const Hero = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild variant="quirky" size="lg" className="group">
-              <a href="#shop">
+              <a href="/?category=all#shop">
                 Shop Collection
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </a>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <a href="#about">Our Story</a>
+              <a href="/artist">Our Story</a>
             </Button>
           </div>
 
@@ -124,7 +126,9 @@ const Hero = () => {
                 heroImage,
                 mugImage,
                 vaseImage,
-                bowlImage
+                bowlImage,
+                potteryTexture2,
+                potteryTexture3
               ]}
               alt="Beautiful handcrafted pottery collection"
               className="w-full h-[500px]"
