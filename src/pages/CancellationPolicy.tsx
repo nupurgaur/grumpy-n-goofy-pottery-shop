@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { BRAND_NAME } from "@/config/brand";
+import { typography } from "@/config/typography";
 
 const CancellationPolicy = () => {
   return (
@@ -11,27 +13,27 @@ const CancellationPolicy = () => {
             <Link to="/">← Back to Home</Link>
           </Button>
         </div>
-        <h1 className="text-3xl font-bold text-brand-primary mt-2">Cancellation Policy</h1>
+        <h1 className={`text-3xl text-brand-primary mt-2 ${typography.title}`}>Cancellation Policy</h1>
         <div className="h-1 w-12 bg-brand-secondary rounded mt-2" />
         <p className="text-sm text-muted-foreground mt-2">Last updated: October 2025</p>
         <Card className="shadow-card mt-6 border-t-4 border-brand-secondary">
           <CardContent className="prose dark:prose-invert max-w-none py-6">
             <p>
-              We understand that plans can change. Here is our policy regarding order cancellations.
+              {BRAND_NAME} understands that plans can change. Here is our policy regarding order cancellations.
             </p>
 
-            <h2 className="text-xl font-semibold mt-6 text-brand-primary">Cancellation Window</h2>
+            <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Cancellation Window</h2>
             <ul>
               <li>You may cancel your order within 24 hours of placing it for a full refund.</li>
               <li>Cancellations are not possible after the order has been dispatched.</li>
             </ul>
 
-            <h2 className="text-xl font-semibold mt-6 text-brand-primary">How to Cancel</h2>
+            <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>How to Cancel</h2>
             <p>
-              To cancel your order, please email us at <strong>goofyngrumpy@gmail.com</strong> with your order ID and reason for cancellation.
+              To cancel your order, please email us at <strong>grumpyngoofy@gmail.com</strong> with your order ID and reason for cancellation.
             </p>
 
-            <h2 className="text-xl font-semibold mt-6 text-brand-primary">Refund for Cancellation</h2>
+            <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Refund for Cancellation</h2>
             <p>
              If your cancellation is approved, the refund will be processed to your original payment method within 5-7 business days.
             </p>

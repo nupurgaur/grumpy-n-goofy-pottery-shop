@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CreditCard, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BRAND_NAME } from '@/config/brand';
 
 declare global {
   interface Window {
@@ -296,8 +297,8 @@ const Checkout = () => {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Pottery Store',
-        description: 'Purchase from Pottery Store',
+        name: BRAND_NAME,
+        description: `Purchase from ${BRAND_NAME}`,
         order_id: orderData.order_id,
         prefill: {
           name: formData.customerName,
@@ -305,7 +306,7 @@ const Checkout = () => {
           contact: formData.customerPhone
         },
         theme: {
-          color: '#8B4513'
+          color: '#052b5b'
         },
         handler: async (response: any) => {
           try {

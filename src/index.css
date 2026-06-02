@@ -2,46 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Goofy 'n' Grumpy Pottery Design System
+/* Goofy n Grumpy — design system
 All colors MUST be HSL. Inspired by the quirky brand personality.
 */
 
 @layer base {
   :root {
     /* Brand Colors from Logo */
-    --background: 0 0% 100%;
-    --foreground: 220 70% 15%;
+    /* Palette:
+       - primary:   #052b5b
+       - secondary: #e88ca3
+       - background:#f5f3ef
+       - foreground:#2e2e2e
+       - accent:    #a7c7e7
+    */
+    --background: 40 23% 95%;
+    --foreground: 0 0% 18%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 70% 15%;
+    --card: 40 23% 95%;
+    --card-foreground: 0 0% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 70% 15%;
+    --popover: 40 23% 95%;
+    --popover-foreground: 0 0% 18%;
 
-    /* Navy Blue - Primary brand color */
-    --primary: 220 70% 20%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 220 50% 30%;
+    /* Navy Blue - Primary brand color (#052b5b) */
+    --primary: 213 90% 19%;
+    --primary-foreground: 40 23% 95%;
+    --primary-light: 213 70% 30%;
 
-    /* Pink - Secondary brand color */
-    --secondary: 320 80% 70%;
-    --secondary-foreground: 220 70% 15%;
-    --secondary-light: 320 60% 85%;
+    /* Pink - Secondary brand color (#e88ca3) */
+    --secondary: 345 67% 73%;
+    --secondary-foreground: 0 0% 18%;
+    --secondary-light: 345 67% 88%;
 
-    /* Cream/Yellow - Accent color */
-    --accent: 50 80% 80%;
-    --accent-foreground: 220 70% 15%;
-    --accent-dark: 45 70% 60%;
+    /* Light Blue - Accent color (#a7c7e7) */
+    --accent: 210 57% 78%;
+    --accent-foreground: 0 0% 18%;
+    --accent-dark: 210 45% 65%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 220 30% 50%;
+    --muted: 210 45% 92%;
+    --muted-foreground: 0 0% 35%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 90%;
-    --input: 220 20% 95%;
-    --ring: 220 70% 20%;
+    --border: 210 25% 85%;
+    --input: 210 30% 90%;
+    --ring: 213 90% 19%;
 
     --radius: 0.75rem;
 
@@ -70,36 +77,36 @@ All colors MUST be HSL. Inspired by the quirky brand personality.
   }
 
   .dark {
-    --background: 220 70% 8%;
-    --foreground: 0 0% 95%;
+    --background: 213 70% 8%;
+    --foreground: 40 23% 95%;
 
-    --card: 220 70% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 213 70% 10%;
+    --card-foreground: 40 23% 95%;
 
-    --popover: 220 70% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 213 70% 10%;
+    --popover-foreground: 40 23% 95%;
 
-    --primary: 320 80% 70%;
-    --primary-foreground: 220 70% 8%;
-    --primary-light: 320 60% 80%;
+    --primary: 345 67% 73%;
+    --primary-foreground: 213 70% 8%;
+    --primary-light: 345 67% 82%;
 
-    --secondary: 220 50% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --secondary-light: 220 40% 30%;
+    --secondary: 210 57% 78%;
+    --secondary-foreground: 213 70% 8%;
+    --secondary-light: 210 50% 70%;
 
-    --accent: 50 80% 80%;
-    --accent-foreground: 220 70% 8%;
-    --accent-dark: 45 70% 60%;
+    --accent: 213 90% 19%;
+    --accent-foreground: 40 23% 95%;
+    --accent-dark: 213 70% 30%;
 
-    --muted: 220 50% 15%;
-    --muted-foreground: 220 20% 70%;
+    --muted: 213 45% 14%;
+    --muted-foreground: 210 20% 80%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 220 40% 20%;
-    --input: 220 40% 18%;
-    --ring: 320 80% 70%;
+    --border: 213 35% 22%;
+    --input: 213 35% 18%;
+    --ring: 345 67% 73%;
 
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
     --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
@@ -138,7 +145,27 @@ All colors MUST be HSL. Inspired by the quirky brand personality.
     transition: var(--transition-smooth);
   }
 
-  /* Typography */
+  /* Typography roles */
+  .font-title {
+    font-family: theme(fontFamily.title);
+  }
+
+  .font-subtitle {
+    font-family: theme(fontFamily.subtitle);
+  }
+
+  .font-heading {
+    font-family: theme(fontFamily.heading);
+  }
+
+  .font-subheading {
+    font-family: theme(fontFamily.subheading);
+  }
+
+  .font-section {
+    font-family: theme(fontFamily.section);
+  }
+
   .text-brand-primary {
     color: hsl(var(--primary));
   }
@@ -152,9 +179,19 @@ All colors MUST be HSL. Inspired by the quirky brand personality.
   }
 
   /* Brand theming for content blocks */
-  .prose h1,
-  .prose h2,
-  .prose h3 {
+  .prose h1 {
+    @apply font-title font-bold;
+    color: hsl(var(--primary));
+  }
+
+  .prose h2 {
+    @apply font-heading font-bold;
+    color: hsl(var(--primary));
+  }
+
+  .prose h3,
+  .prose h4 {
+    @apply font-subheading;
     color: hsl(var(--primary));
   }
 

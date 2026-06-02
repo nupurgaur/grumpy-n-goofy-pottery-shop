@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Tables } from '@/integrations/supabase/types';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { typography } from '@/config/typography';
 
 type Order = Tables<'orders'> & {
   order_items: Tables<'order_items'>[];
@@ -179,7 +180,7 @@ const OrdersPage = () => {
         <main>
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-2xl font-bold text-brand-primary mb-4">Sign In Required</h1>
+              <h1 className={`text-2xl text-brand-primary mb-4 ${typography.title}`}>Sign In Required</h1>
               <p className="text-muted-foreground">Please sign in to view your orders.</p>
             </div>
           </div>
@@ -196,7 +197,7 @@ const OrdersPage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-brand-primary">My Orders</h1>
+              <h1 className={`text-3xl text-brand-primary ${typography.sectionHeader}`}>My Orders</h1>
               <Button onClick={fetchOrders} variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
@@ -207,7 +208,7 @@ const OrdersPage = () => {
             <Card>
               <CardContent className="p-8 text-center">
                 <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Orders Yet</h3>
+                <h3 className={`text-lg mb-2 ${typography.subheading}`}>No Orders Yet</h3>
                 <p className="text-muted-foreground mb-4">
                   You haven't placed any orders yet. Start shopping to see your orders here.
                 </p>

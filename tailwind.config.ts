@@ -13,6 +13,14 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        title: ['"Cormorant Garamond"', "Georgia", "serif"],
+        heading: ['"Cormorant Garamond"', "Georgia", "serif"],
+        subtitle: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        subheading: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        section: ['"Genty Demo"', "Genty", "cursive"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

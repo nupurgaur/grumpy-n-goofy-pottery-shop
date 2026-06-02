@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
-import heroImage from "@/assets/IMG_20250929_021501.jpg";
-import potteryTexture from "@/assets/IMG20250927152142.jpg";
-import mugImage from "@/assets/IMG20250927153335.jpg";
-import vaseImage from "@/assets/IMG20250927152142.jpg";
-import bowlImage from "@/assets/IMG20250927153430.jpg";
-import potteryTexture2 from "@/assets/IMG20250927151704.jpg";
-import potteryTexture3 from "@/assets/IMG20250927152654.jpg";
+import { ArrowRight } from "lucide-react";
+import { HERO_CAROUSEL_IMAGES } from "@/config/heroCarousel";
+import { BRAND_NAME } from "@/config/brand";
+import { typography } from "@/config/typography";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 
 const Hero = () => {
@@ -46,11 +42,6 @@ const Hero = () => {
   `);
   return (
     <section id="home" className="relative min-h-[80vh] flex items-center overflow-hidden">
-      {/* Pottery texture background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-20"
-        style={{ backgroundImage: `url(${potteryTexture})` }}
-      ></div>
       {/* Warm tint to neutralize grey */}
       <div
         className="absolute inset-0"
@@ -69,23 +60,18 @@ const Hero = () => {
       {/* Gradient overlay */}
       <div className="absolute inset-0 hero-gradient opacity-10"></div>
       
-      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+      <div className="container mx-auto px-4 grid lg:grid-cols-5 gap-12 items-center relative z-10">
         {/* Content */}
-        <div className="space-y-8">
+        <div className="space-y-8 lg:col-span-2">
           <div className="space-y-4">
-            <div className="flex items-center space-x-2 text-brand-secondary">
-              <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-medium">Made of moods & mud</span>
-            </div>
-            
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+            <h1 className={`text-4xl lg:text-6xl leading-tight ${typography.title}`}>
               <span className="text-brand-primary">Quirky</span> Pottery for{" "}
               <span className="text-brand-secondary">Everyday</span> Magic
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-lg">
-              Where grumpy meets goofy! Discover unique, handcrafted pottery pieces 
-              that bring character and charm to your daily rituals.
+              Welcome to {BRAND_NAME}. Discover unique, handcrafted pottery pieces that
+              bring character and charm to your daily rituals.
             </p>
           </div>
 
@@ -104,34 +90,27 @@ const Hero = () => {
           {/* Honest launch statements instead of inflated stats */}
           <div className="flex space-x-8 pt-4">
             <div>
-              <div className="text-2xl font-bold text-brand-primary">Handcrafted</div>
-              <div className="text-sm text-muted-foreground">Small-batch pottery, made with care</div>
+              <div className={`text-2xl text-brand-primary ${typography.heading}`}>Handcrafted</div>
+              <div className={`text-sm text-muted-foreground ${typography.subheading}`}>Small-batch pottery, made with care</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-brand-primary">Quality First</div>
-              <div className="text-sm text-muted-foreground">No mass-production, only unique pieces</div>
+              <div className={`text-2xl text-brand-primary ${typography.heading}`}>Quality First</div>
+              <div className={`text-sm text-muted-foreground ${typography.subheading}`}>No mass-production, only unique pieces</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-brand-primary">Sustainable</div>
-              <div className="text-sm text-muted-foreground">Eco-friendly materials and practices</div>
+              <div className={`text-2xl text-brand-primary ${typography.heading}`}>Sustainable</div>
+              <div className={`text-sm text-muted-foreground ${typography.subheading}`}>Eco-friendly materials and practices</div>
             </div>
           </div>
         </div>
 
         {/* Hero Image Carousel */}
-        <div className="relative">
-          <div className="relative overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth">
+        <div className="relative lg:col-span-3 lg:justify-self-end lg:ml-16 xl:ml-24">
+          <div className="relative w-full max-w-[92vw] lg:w-[620px] xl:w-[700px] flex-shrink-0 overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth">
             <ProductImageCarousel
-              images={[
-                heroImage,
-                mugImage,
-                vaseImage,
-                bowlImage,
-                potteryTexture2,
-                potteryTexture3
-              ]}
+              images={HERO_CAROUSEL_IMAGES}
               alt="Beautiful handcrafted pottery collection"
-              className="w-full h-[500px]"
+              className="w-full h-[420px] sm:h-[520px] lg:h-[620px]"
               showArrows={true}
               showDots={true}
               autoPlay={true}
@@ -139,11 +118,6 @@ const Hero = () => {
               showCounter={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
-          </div>
-          
-          {/* Floating elements */}
-          <div className="absolute -top-4 -right-4 bg-secondary text-secondary-foreground rounded-full p-3 shadow-quirky animate-bounce">
-            <Sparkles className="h-6 w-6" />
           </div>
         </div>
       </div>

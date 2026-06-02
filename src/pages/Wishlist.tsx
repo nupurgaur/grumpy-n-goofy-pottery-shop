@@ -10,6 +10,7 @@ import { Product } from "@/hooks/useProducts";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { ProductDetailDialog } from "@/components/ProductDetailDialog";
 import { useState } from "react";
+import { typography } from "@/config/typography";
 
 // Fallback images for products
 const getProductImage = (imageUrl: string) => {
@@ -60,7 +61,7 @@ const Wishlist = () => {
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">Sign in to view your wishlist</h2>
+            <h2 className={`text-2xl mb-4 ${typography.heading}`}>Sign in to view your wishlist</h2>
             <p className="text-muted-foreground mb-6">
               Please sign in to access your saved items
             </p>
@@ -78,7 +79,7 @@ const Wishlist = () => {
       <div className="min-h-screen bg-background py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h1 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">
+            <h1 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
               My Wishlist
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -119,7 +120,7 @@ const Wishlist = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-2">
+              <h1 className={`text-3xl lg:text-4xl text-brand-primary mb-2 ${typography.sectionHeader}`}>
                 My Wishlist
               </h1>
               <p className="text-xl text-muted-foreground">
@@ -142,7 +143,7 @@ const Wishlist = () => {
         {wishlist.length === 0 ? (
           <div className="text-center py-20">
             <Heart className="h-24 w-24 mx-auto mb-6 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">Your wishlist is empty</h2>
+            <h2 className={`text-2xl mb-4 ${typography.heading}`}>Your wishlist is empty</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Start adding items you love to your wishlist by clicking the heart icon on any product
             </p>
@@ -195,7 +196,7 @@ const Wishlist = () => {
                       </div>
                       {/* Product Info */}
                       <div>
-                        <h3 className="text-xl font-semibold text-brand-primary mb-2">
+                        <h3 className={`text-xl text-brand-primary mb-2 ${typography.heading}`}>
                           {product.name}
                         </h3>
                         <p className="text-muted-foreground text-sm mb-4">
@@ -218,7 +219,7 @@ const Wishlist = () => {
                       {/* Price and Actions */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-brand-primary">
+                          <span className={`text-2xl text-brand-primary ${typography.heading}`}>
                             ₹{product.price}
                           </span>
                           {product.original_price && (

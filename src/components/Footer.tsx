@@ -1,25 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Mail, Phone, MapPin, Instagram, Youtube } from "lucide-react"; 
+import { Heart, Mail, Phone, MapPin, Instagram, Youtube } from "lucide-react";
+import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
+import { typography } from "@/config/typography";
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer
+      className="text-[#f5f3ef]"
+      style={{ backgroundColor: BRAND_NAVY }}
+    >
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-                alt="Goofy 'n' Grumpy Logo" 
-                className="h-10 w-10"
-              />
-              <div>
-                <h3 className="text-xl font-bold">Goofy 'n' Grumpy</h3>
-                <p className="text-sm text-primary-foreground/80">Made of moods & mud</p>
-              </div>
-            </div>
-            <p className="text-primary-foreground/80">
+            <img
+              src={BRAND_LOGO_FOOTER}
+              alt={`${BRAND_NAME} logo`}
+              className="h-32 sm:h-40 w-auto max-w-full object-contain object-left"
+            />
+            <p className="text-[#f5f3ef]/80">
               Bringing quirky charm to your daily rituals through handcrafted pottery 
               made with love and attention to detail.
             </p>
@@ -27,7 +26,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Quick Links</h4>
             <ul className="space-y-2">
               <li>
                 <a href="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Home</a>
@@ -61,11 +60,11 @@ const Footer = () => {
 
           {/* Contact */}
           <div id="contact">
-            <h4 className="text-lg font-semibold mb-4">Get in Touch</h4>
+            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Get in Touch</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">goofyngrumpy@gmail.com</span>
+                <span className="text-primary-foreground/80">grumpyngoofy@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-primary-foreground/80" />
@@ -80,7 +79,7 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Stay Updated</h4>
+            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Stay Updated</h4>
             <p className="text-primary-foreground/80 text-sm mb-4">
               Get the latest pottery pieces and studio updates delivered to your inbox.
             </p>
@@ -108,7 +107,7 @@ const Footer = () => {
           {/* Social Links */}
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             {[
-              { Icon: Instagram, href: "https://www.instagram.com/grumpy_and_goofy/", label: "Instagram" },
+              { Icon: Instagram, href: "https://www.instagram.com/grumpyngoofy/", label: "Instagram" },
               { Icon: Youtube, href: "https://www.youtube.com/channel/UCwve4LS858Se5FqKv9xYisA", label: "YouTube" }
             ].map(({ Icon, href, label }, index) => (
               <a key={index} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
@@ -121,7 +120,7 @@ const Footer = () => {
         </div>
 
         <div className="text-center text-primary-foreground/60 text-sm mt-4">
-          © 2024 Goofy 'n' Grumpy. All rights reserved.
+          © {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.
         </div>
       </div>
     </footer>

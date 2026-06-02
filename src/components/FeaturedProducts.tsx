@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Heart, Star, Package, AlertTriangle, Eye } from "lucide-react";
+import { ShoppingCart, Heart, Package, AlertTriangle, Eye } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useProducts } from "@/hooks/useProducts";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -10,13 +10,12 @@ import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { ProductDetailDialog } from "@/components/ProductDetailDialog";
 import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import mugImage from "@/assets/IMG20250927153335.jpg";
-import vaseImage from "@/assets/IMG20250927152142.jpg";
-import bowlImage from "@/assets/IMG20250927153430.jpg";
-import heroImage from "@/assets/IMG_20250929_021501.jpg";
-import textureBg from "@/assets/IMG20250927152142.jpg";
-import potteryTexture from "@/assets/IMG20250927151704.jpg";
-import potteryTexture2 from "@/assets/IMG20250927152654.jpg";
+import mugImage from "@/assets/IMG20250927153335 (2).jpg";
+import vaseImage from "@/assets/IMG20250927152145.jpg";
+import bowlImage from "@/assets/IMG20250927153430 (1).jpg";
+import heroImage from "@/assets/IMG_20250929_021501 (2).jpg";
+import { typography } from "@/config/typography";
+import { ProductCatalogLabels } from "@/components/ProductCatalogLabels";
 
 // Consistent fallback images for all products
 const getProductImages = (product: any) => {
@@ -52,7 +51,7 @@ const FeaturedProducts = () => {
   const hasCategoryParam = location.search.includes('category=');
   const category = params.get('category') || 'all';
   const isHomeFeatured = !hasCategoryParam; // true homepage: no category filter present
-  const { products, loading, getStockStatus, isLowStock } = useProducts(category, { featuredOnly: isHomeFeatured });
+  const { products, loading, getStockStatus, isLowStock } = useProducts(category);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -174,18 +173,11 @@ const FeaturedProducts = () => {
       <section
         id="shop"
         className="py-20 bg-muted/30"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url(${textureBg})`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '600px 600px',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'scroll'
-        }}
       >
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">
-              Featured Collection
+            <h2 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
+              Curated picks
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Loading our amazing pottery collection...
@@ -213,20 +205,13 @@ const FeaturedProducts = () => {
     <section
       id="shop"
       className="py-20 bg-muted/30"
-      style={{
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url(${textureBg})`,
-        backgroundRepeat: 'repeat',
-        backgroundSize: '600px 600px',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'scroll'
-      }}
     >
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">
+          <h2 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
             {isHomeFeatured
-              ? 'Featured Products'
+              ? 'Curated picks'
               : category === 'all'
                 ? 'All Products'
                 : `${category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`}
@@ -301,7 +286,7 @@ const FeaturedProducts = () => {
           <div className="mb-12">
             <Card className="border-0 shadow-card">
               <CardContent className="p-12 text-center">
-                <h3 className="text-xl font-semibold text-brand-primary mb-2">
+                <h3 className={`text-xl text-brand-primary mb-2 ${typography.heading}`}>
                   {category === 'all' ? 'No results found' : 'No products in this category yet'}
                 </h3>
                 {category === 'all' && (
@@ -335,11 +320,6 @@ const FeaturedProducts = () => {
                       className={`w-full h-full object-cover ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                     />
                   )}
-                  {product.is_featured && (
-                    <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
-                      Featured
-                    </Badge>
-                  )}
                   {getStockBadge(product)}
                   <Button
                     variant="ghost"
@@ -358,33 +338,12 @@ const FeaturedProducts = () => {
                 
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {/* Rating */}
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < Math.floor(product.rating)
-                                ? "fill-accent-dark text-accent-dark"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {product.rating} ({product.review_count})
-                      </span>
-                    </div>
-
                     {/* Product Info */}
-                    <div>
-                      <h3 className="text-xl font-semibold text-brand-primary mb-2">
+                    <div className="space-y-2">
+                      <h3 className={`text-xl text-brand-primary ${typography.heading}`}>
                         {product.name}
                       </h3>
-                      <p className="text-muted-foreground text-sm mb-4">
-                        {product.description}
-                      </p>
+                      <ProductCatalogLabels productName={product.name} compact />
                     </div>
 
                     {/* Stock Status */}
@@ -404,7 +363,7 @@ const FeaturedProducts = () => {
                     {/* Price and Actions */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-brand-primary">
+                        <span className={`text-2xl text-brand-primary ${typography.heading}`}>
                           ₹{product.price}
                         </span>
                         {product.original_price && (

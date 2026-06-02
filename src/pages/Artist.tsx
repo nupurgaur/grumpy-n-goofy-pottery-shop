@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Instagram, Facebook, Twitter, Camera, Sparkles } from "lucide-react";
+import { BRAND_NAME } from "@/config/brand";
+import { BrandLogo } from "@/components/BrandLogo";
+import { typography } from "@/config/typography";
 
 const ArtistPage = () => {
   return (
@@ -13,9 +16,9 @@ const ArtistPage = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-start">
               <div className="space-y-6">
-                <h1 className="text-3xl lg:text-4xl font-bold text-brand-primary">Meet the Artist</h1>
+                <h1 className={`text-3xl lg:text-4xl text-brand-primary ${typography.title}`}>Meet the Artist</h1>
                 <p className="text-muted-foreground text-lg">
-                  Hi, I’m the hands behind Goofy 'n' Grumpy. Every mug, bowl, and vase
+                  Hi, I’m the hands behind {BRAND_NAME}. Every mug, bowl, and vase
                   is hand-thrown in small batches, designed to bring a little joy to your
                   everyday rituals. Expect quirky shapes, cozy glazes, and one-of-a-kind
                   personality in each piece.
@@ -25,7 +28,7 @@ const ArtistPage = () => {
                     <CardContent className="p-5 flex items-start gap-3">
                       <Sparkles className="h-5 w-5 text-brand-secondary" />
                       <div>
-                        <h3 className="font-semibold text-brand-primary">Small-Batch Craft</h3>
+                        <h3 className={`text-brand-primary ${typography.heading}`}>Small-Batch Craft</h3>
                         <p className="text-sm text-muted-foreground">Limited runs with intentional imperfections.</p>
                       </div>
                     </CardContent>
@@ -34,7 +37,7 @@ const ArtistPage = () => {
                     <CardContent className="p-5 flex items-start gap-3">
                       <Camera className="h-5 w-5 text-brand-secondary" />
                       <div>
-                        <h3 className="font-semibold text-brand-primary">Studio Stories</h3>
+                        <h3 className={`text-brand-primary ${typography.heading}`}>Studio Stories</h3>
                         <p className="text-sm text-muted-foreground">Follow along for process, drops, and restocks.</p>
                       </div>
                     </CardContent>
@@ -55,11 +58,12 @@ const ArtistPage = () => {
               </div>
               <div>
                 <Card className="overflow-hidden shadow-card border-0">
-                  <img
-                    src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png"
-                    alt="Goofy 'n' Grumpy Studio"
-                    className="w-full h-full object-contain bg-muted/20"
-                  />
+                  <div className="flex items-center justify-center p-8">
+                    <BrandLogo
+                      iconClassName="h-28 sm:h-32"
+                      titleClassName="text-4xl sm:text-5xl"
+                    />
+                  </div>
                 </Card>
               </div>
             </div>

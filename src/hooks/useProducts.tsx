@@ -37,14 +37,14 @@ export interface InventoryMovement {
   created_at: string;
 }
 
-export const useProducts = (category?: string, options?: { featuredOnly?: boolean }) => {
+export const useProducts = (category?: string) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadProducts();
-  }, [category, options?.featuredOnly]);
+  }, [category]);
 
   const loadProducts = async () => {
     try {
@@ -57,21 +57,20 @@ export const useProducts = (category?: string, options?: { featuredOnly?: boolea
       if (category && category !== 'all') {
         query = query.eq('category', category);
       }
-      if (options?.featuredOnly) {
-        query = query.eq('is_featured', true);
-      }
-      
       const { data, error } = await query
-        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading products:', error);
+      const msg = error?.message || '';
+      const isNetworkError = msg === 'Failed to fetch' || msg.includes('NetworkError') || error?.name === 'TypeError';
       toast({
         title: "Error loading products",
-        description: "Failed to load product catalog",
+        description: isNetworkError
+          ? "Cannot reach Supabase. Check your internet connection and, if you use Supabase free tier, open the Supabase Dashboard and restore/unpause your project."
+          : msg || "Failed to load product catalog",
         variant: "destructive"
       });
     } finally {

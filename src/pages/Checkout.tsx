@@ -1,6 +1,7 @@
 import Checkout from '@/components/Checkout';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { typography } from '@/config/typography';
 
 const CheckoutPage = () => {
   return (
@@ -12,7 +13,7 @@ const CheckoutPage = () => {
               <Link to="/">← Back to Home</Link>
             </Button>
           </div>
-          <h1 className="text-3xl font-bold text-brand-primary mb-8">Checkout</h1>
+          <h1 className={`text-3xl text-brand-primary mb-8 ${typography.title}`}>Checkout</h1>
           <Checkout />
         </div>
       </div>

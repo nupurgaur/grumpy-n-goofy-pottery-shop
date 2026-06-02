@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { 
   Heart, 
   ShoppingCart, 
-  Star, 
   Package, 
   X, 
   ZoomIn, 
@@ -16,14 +16,15 @@ import {
   Plus,
   Minus,
   Info,
-  Ruler,
-  Palette,
-  Shield
+  ExternalLink
 } from 'lucide-react';
+import { productDetailPath } from '@/lib/productImages';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { Product } from '@/hooks/useProducts';
 import { ProductImageCarousel } from '@/components/ProductImageCarousel';
+import { typography } from '@/config/typography';
+import { ProductCatalogLabels } from '@/components/ProductCatalogLabels';
 
 interface ProductDetailDialogProps {
   product: Product | null;
@@ -40,6 +41,7 @@ const getProductImage = (imageUrl: string) => {
 };
 
 export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailDialogProps) => {
+  const navigate = useNavigate();
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
@@ -169,7 +171,6 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
   })();
 
   const isOutOfStock = product.stock_quantity === 0;
-  const isLowStock = product.stock_quantity <= product.low_stock_threshold;
   const isInWishlistProduct = isInWishlist(product.id);
 
   const handleAddToCart = () => {
@@ -290,7 +291,6 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
 
   // Get details from product props, fallback if missing
   const details = {
-    dimensions: product.dimensions || "",
     weight: product.weight || "",
     care: product.care || "Microwave safe",
     origin: product.origin || "Handcrafted in India",
@@ -299,10 +299,8 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-brand-primary">
-            {product.name}
-          </DialogTitle>
+        <DialogHeader className="sr-only">
+          <DialogTitle>{product.name}</DialogTitle>
         </DialogHeader>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -418,29 +416,23 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
 
           {/* Product Details Section */}
           <div className="space-y-6">
-            {/* Rating and Reviews */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.floor(product.rating)
-                        ? "fill-accent-dark text-accent-dark"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {product.rating} ({product.review_count} reviews)
-              </span>
-            </div>
+            {/* Product name (primary heading) */}
+            <h2 className={`text-3xl text-brand-primary leading-tight ${typography.heading}`}>
+              {product.name}
+            </h2>
+
+            <ProductCatalogLabels productName={product.name} />
+
+            {product.description && (
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+            )}
 
             {/* Price */}
             <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <span className="text-3xl font-bold text-brand-primary">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className={`text-3xl text-brand-primary ${typography.heading}`}>
                   ₹{product.price}
                 </span>
                 {product.original_price && (
@@ -456,63 +448,14 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
               </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-lg">Description</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description || "This beautiful handcrafted pottery piece brings warmth and character to any space. Made with care and attention to detail, each piece is unique and tells its own story."}
-              </p>
-            </div>
-
-            {/* Product Details */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Product Details</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {details.dimensions && (
-                  <div className="flex items-center space-x-2">
-                    <Ruler className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Dimensions:</span>
-                    <span>{details.dimensions}</span>
-                  </div>
-                )}
-                {details.weight && (
-                  <div className="flex items-center space-x-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Weight:</span>
-                    <span>{details.weight}</span>
-                  </div>
-                )}
-                <div className="flex items-center space-x-2">
-                  <Palette className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Material:</span>
-                  <span>Stoneware Clay</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Care:</span>
-                  <span>{details.care}</span>
-                </div>
+            {isOutOfStock && (
+              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                <Package className="h-4 w-4 shrink-0" />
+                <span className="font-medium">Sold out</span>
               </div>
-            </div>
+            )}
 
             <Separator />
-
-            {/* Stock Status */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">Availability:</span>
-                <span className={`text-sm ${
-                  isOutOfStock ? 'text-destructive' : 
-                  isLowStock ? 'text-yellow-600' : 
-                  'text-green-600'
-                }`}>
-                  {isOutOfStock ? 'Out of Stock' : 
-                   isLowStock ? `Low Stock (${product.stock_quantity} left)` : 
-                   `${product.stock_quantity} in stock`}
-                </span>
-              </div>
-            </div>
 
             {/* Quantity and Actions */}
             <div className="space-y-4">
@@ -559,6 +502,19 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
                   <Heart className={`h-5 w-5 ${isInWishlistProduct ? 'fill-current' : ''}`} />
                 </Button>
               </div>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  onClose();
+                  navigate(productDetailPath(product.id));
+                }}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Full details
+              </Button>
             </div>
 
             {/* Additional Info */}

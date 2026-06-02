@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Eye, EyeOff, XCircle } from 'lucide-react';
-
+import { BrandLogo } from '@/components/BrandLogo';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -104,14 +104,11 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Branding */}
-        <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-            alt="Goofy 'n' Grumpy Logo" 
-            className="h-16 w-16 mx-auto mb-4"
+        <div className="flex justify-center mb-8">
+          <BrandLogo
+            iconClassName="h-20 sm:h-24"
+            titleClassName="text-3xl sm:text-4xl"
           />
-          <h1 className="text-2xl font-bold text-brand-primary">Goofy 'n' Grumpy</h1>
-          <p className="text-muted-foreground">Made of moods & mud</p>
         </div>
 
         <Card className="shadow-card">

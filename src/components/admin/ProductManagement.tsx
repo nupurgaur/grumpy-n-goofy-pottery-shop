@@ -43,7 +43,6 @@ const ProductManagement = () => {
     images: [] as string[],
     stock_quantity: '',
     low_stock_threshold: '5',
-    is_featured: false,
     is_active: true,
     dimensions: '',
     weight: '',
@@ -61,7 +60,6 @@ const ProductManagement = () => {
       images: [],
       stock_quantity: '',
       low_stock_threshold: '5',
-      is_featured: false,
       is_active: true,
       dimensions: '',
       weight: '',
@@ -84,7 +82,6 @@ const ProductManagement = () => {
         images: formData.images,
         stock_quantity: parseInt(formData.stock_quantity),
         low_stock_threshold: parseInt(formData.low_stock_threshold),
-        is_featured: formData.is_featured,
         is_active: formData.is_active,
         dimensions: formData.dimensions,
         weight: formData.weight,
@@ -135,7 +132,6 @@ const ProductManagement = () => {
       images: product.images || (product.image_url ? [product.image_url] : []),
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
-      is_featured: product.is_featured,
       is_active: product.is_active,
       dimensions: product.dimensions || '',
       weight: product.weight || '',
@@ -330,23 +326,13 @@ const ProductManagement = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="is_featured"
-                          checked={formData.is_featured}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
-                        />
-                        <Label htmlFor="is_featured" className="text-sm">Featured</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="is_active"
-                          checked={formData.is_active}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                        />
-                        <Label htmlFor="is_active" className="text-sm">Active</Label>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_active"
+                        checked={formData.is_active}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                      />
+                      <Label htmlFor="is_active" className="text-sm">Active</Label>
                     </div>
                   </div>
                   
@@ -400,9 +386,6 @@ const ProductManagement = () => {
                         </div>
                         <div>
                           <div className="font-medium">{product.name}</div>
-                          {product.is_featured && (
-                            <Badge variant="secondary" className="text-xs">Featured</Badge>
-                          )}
                         </div>
                       </div>
                     </TableCell>

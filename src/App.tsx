@@ -22,6 +22,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import ProductDetail from "./pages/ProductDetail";
 
 const App = () => {
   console.log('App component is rendering - no React Query should be present');
@@ -36,6 +37,7 @@ const App = () => {
           <ScrollToHash />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/products/:productId" element={<ProductDetail />} />
             <Route path="/artist" element={<Artist />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />

@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Leaf, HandHeart, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { BRAND_NAME } from "@/config/brand";
+import { typography } from "@/config/typography";
 
 const ContactPage = () => {
   const { toast } = useToast();
@@ -41,14 +43,14 @@ const ContactPage = () => {
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-5xl">
             <div className="mb-8">
-              <h1 className="text-4xl lg:text-5xl font-bold text-brand-primary mb-4">Contact Us</h1>
+              <h1 className={`text-4xl lg:text-5xl text-brand-primary mb-4 ${typography.title}`}>Contact Us</h1>
               <p className="text-lg text-muted-foreground max-w-3xl">
-                We’re here to help with orders, product questions, or feedback. Reach out and we’ll get back during support hours.
+                {BRAND_NAME} is here to help with orders, product questions, or feedback. Reach out and we’ll get back during support hours.
               </p>
               <p className="text-lg text-muted-foreground max-w-4xl mt-4">
                 Looking for bulk orders for cafes, restaurants, or corporate gifting? We’d love to collaborate. 
-                Write to us using the form below or email us at <span className="font-medium">goofyngrumpy@gmail.com</span>. 
-                You can also connect with us on Instagram <span className="font-medium">@goofyngrumpy</span> for quick queries and updates.
+                Write to us using the form below or email us at <span className="font-medium">grumpyngoofy@gmail.com</span>. 
+                You can also connect with us on Instagram <span className="font-medium">@grumpyngoofy</span> for quick queries and updates.
               </p>
             </div>
 
@@ -101,10 +103,10 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <div className="font-semibold">Email</div>
-                    <div className="text-muted-foreground">goofyngrumpy@gmail.com</div>
+                    <div className="text-muted-foreground">grumpyngoofy@gmail.com</div>
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    Response times may vary with volume, but we aim to reply promptly. You can also DM us on Instagram @goofyngrumpy.
+                    Response times may vary with volume, but we aim to reply promptly. You can also DM us on Instagram @grumpyngoofy.
                   </p>
                 </CardContent>
               </Card>

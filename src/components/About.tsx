@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Coffee, Palette, Users } from "lucide-react";
+import { BRAND_NAME } from "@/config/brand";
+import { typography } from "@/config/typography";
 
 const features = [
   {
@@ -35,13 +37,13 @@ const About = () => {
           {/* Content */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-6">
-                Where Goofy Meets Grumpy
+              <h2 className={`text-3xl lg:text-4xl text-brand-primary mb-6 ${typography.sectionHeader}`}>
+                {BRAND_NAME}
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p className="text-lg">
-                  Started in a tiny studio with clay-covered hands and a big dream, 
-                  Goofy 'n' Grumpy brings you pottery that's anything but ordinary.
+                  Started in a tiny studio with clay-covered hands and a big dream,{" "}
+                  {BRAND_NAME} brings you pottery that&apos;s anything but ordinary.
                 </p>
                 <p>
                   We believe that functional art should make you smile - whether you're 
@@ -68,7 +70,7 @@ const About = () => {
                   <div className="w-16 h-16 mx-auto bg-secondary/20 rounded-full flex items-center justify-center">
                     <feature.icon className="h-8 w-8 text-brand-secondary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-brand-primary">
+                  <h3 className={`text-lg text-brand-primary ${typography.heading}`}>
                     {feature.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">
