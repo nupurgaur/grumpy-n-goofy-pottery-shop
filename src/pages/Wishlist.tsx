@@ -11,6 +11,7 @@ import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { ProductDetailDialog } from "@/components/ProductDetailDialog";
 import { useState } from "react";
 import { typography } from "@/config/typography";
+import { isTemplateProduct } from "@/config/templates";
 
 // Fallback images for products
 const getProductImage = (imageUrl: string) => {
@@ -29,12 +30,14 @@ const Wishlist = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddToCart = (product: Product) => {
+    const isTemplate = isTemplateProduct(product);
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: getProductImage(product.image_url)
-    }, product.stock_quantity);
+      image: getProductImage(product.image_url),
+      isTemplate,
+    }, isTemplate ? undefined : product.stock_quantity);
   };
 
   const handleRemoveFromWishlist = async (productId: number) => {

@@ -25,6 +25,7 @@ import { Product } from '@/hooks/useProducts';
 import { ProductImageCarousel } from '@/components/ProductImageCarousel';
 import { typography } from '@/config/typography';
 import { ProductCatalogLabels } from '@/components/ProductCatalogLabels';
+import { isTemplateProduct } from '@/config/templates';
 
 interface ProductDetailDialogProps {
   product: Product | null;
@@ -170,16 +171,18 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
     return filtered.length > 0 ? filtered : ['/src/assets/pottery-bowl.jpg'];
   })();
 
-  const isOutOfStock = product.stock_quantity === 0;
+  const isOutOfStock = !isTemplateProduct(product) && product.stock_quantity === 0;
   const isInWishlistProduct = isInWishlist(product.id);
 
   const handleAddToCart = () => {
+    const isTemplate = isTemplateProduct(product);
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: imagesArray[0]
-    }, quantity);
+      image: imagesArray[0],
+      isTemplate,
+    }, isTemplate ? undefined : product.stock_quantity);
     onClose();
   };
 
@@ -284,7 +287,7 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= product.stock_quantity) {
+    if (newQuantity >= 1 && (isTemplateProduct(product) || newQuantity <= product.stock_quantity)) {
       setQuantity(newQuantity);
     }
   };

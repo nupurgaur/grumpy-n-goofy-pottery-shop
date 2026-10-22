@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { isTemplateProduct } from '@/config/templates';
+import { isWorkshopProduct } from '@/config/workshops';
 
 export interface Product {
   id: number;
@@ -24,6 +26,9 @@ export interface Product {
   weight?: string;
   care?: string;
   origin?: string;
+  is_template?: boolean;
+  template_pdf_url?: string | null;
+  is_workshop?: boolean;
 }
 
 export interface InventoryMovement {
@@ -52,7 +57,9 @@ export const useProducts = (category?: string) => {
       let query = supabase
         .from('products')
         .select('*')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .eq('is_template', false)
+        .eq('is_workshop', false);
       
       if (category && category !== 'all') {
         query = query.eq('category', category);
@@ -110,14 +117,17 @@ export const useProducts = (category?: string) => {
   };
 
   const checkStockAvailability = (product: Product, requestedQuantity: number): boolean => {
+    if (isTemplateProduct(product) || isWorkshopProduct(product)) return true;
     return product.stock_quantity >= requestedQuantity;
   };
 
   const isLowStock = (product: Product): boolean => {
+    if (isTemplateProduct(product) || isWorkshopProduct(product)) return false;
     return product.stock_quantity <= product.low_stock_threshold;
   };
 
   const getStockStatus = (product: Product): 'in-stock' | 'low-stock' | 'out-of-stock' => {
+    if (isTemplateProduct(product) || isWorkshopProduct(product)) return 'in-stock';
     if (product.stock_quantity === 0) return 'out-of-stock';
     if (product.stock_quantity <= product.low_stock_threshold) return 'low-stock';
     return 'in-stock';

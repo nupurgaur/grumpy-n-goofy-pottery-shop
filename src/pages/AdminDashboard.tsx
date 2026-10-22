@@ -4,10 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, Plus, BarChart3, Users, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { Package, BarChart3, ArrowLeft, ShoppingCart, CalendarHeart } from 'lucide-react';
 import ProductManagement from '@/components/admin/ProductManagement';
 import InventoryOverview from '@/components/admin/InventoryOverview';
 import OrderManagement from '@/components/admin/OrderManagement';
+import WorkshopManagement from '@/components/admin/WorkshopManagement';
 import { BRAND_NAME } from '@/config/brand';
 import { typography } from '@/config/typography';
 
@@ -93,7 +94,7 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">—</div>
@@ -104,18 +105,22 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
             <TabsTrigger value="orders" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
-              Order Management
+              Orders
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Product Management
+              Catalog
+            </TabsTrigger>
+            <TabsTrigger value="workshops" className="flex items-center gap-2">
+              <CalendarHeart className="h-4 w-4" />
+              Workshops
             </TabsTrigger>
             <TabsTrigger value="inventory" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Inventory Overview
+              Inventory
             </TabsTrigger>
           </TabsList>
           
@@ -125,6 +130,10 @@ const AdminDashboard = () => {
           
           <TabsContent value="products">
             <ProductManagement />
+          </TabsContent>
+
+          <TabsContent value="workshops">
+            <WorkshopManagement />
           </TabsContent>
           
           <TabsContent value="inventory">

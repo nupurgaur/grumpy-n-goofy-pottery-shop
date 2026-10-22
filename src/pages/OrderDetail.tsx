@@ -17,11 +17,19 @@ import {
   MapPin,
   Phone,
   Mail,
-  Calendar
+  Calendar,
+  RefreshCw,
+  Download
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Tables } from '@/integrations/supabase/types';
 import { typography } from '@/config/typography';
+import {
+  canCancelOrder,
+  canResendTemplateEmail,
+  isTemplateOrder,
+} from '@/lib/orderHelpers';
+import { getEdgeFunctionErrorMessage } from '@/lib/edgeFunctionError';
 
 type Order = Tables<'orders'> & {
   order_items: Tables<'order_items'>[];
@@ -32,6 +40,8 @@ type OrderEvent = Tables<'order_events'>;
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'delivered':
+    case 'template_delivered':
+    case 'workshop_confirmed':
       return <CheckCircle className="h-5 w-5 text-green-600" />;
     case 'shipped':
     case 'out_for_delivery':
@@ -48,6 +58,8 @@ const getStatusIcon = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'delivered':
+    case 'template_delivered':
+    case 'workshop_confirmed':
       return 'bg-green-100 text-green-800';
     case 'shipped':
     case 'out_for_delivery':
@@ -73,6 +85,10 @@ const getStatusText = (status: string) => {
       return 'Out for Delivery';
     case 'delivered':
       return 'Delivered';
+    case 'template_delivered':
+      return 'Delivered (PDF emailed)';
+    case 'workshop_confirmed':
+      return 'Workshop Confirmed';
     case 'cancelled':
       return 'Cancelled';
     case 'returned':
@@ -90,6 +106,10 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resending, setResending] = useState(false);
+  const [templateDownloads, setTemplateDownloads] = useState<
+    Array<{ productId: number; productName: string; pdfUrl: string }>
+  >([]);
 
   const fetchOrderDetails = async () => {
     if (!orderId || !user) return;
@@ -125,6 +145,27 @@ const OrderDetailPage = () => {
 
       setOrder(orderData as Order);
       setEvents(eventsData || []);
+
+      const orderIsTemplate = isTemplateOrder(orderData as Order);
+      if (orderIsTemplate && orderData.order_items?.length) {
+        const productIds = orderData.order_items.map((item: { product_id: number }) => item.product_id);
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, name, template_pdf_url')
+          .in('id', productIds);
+
+        setTemplateDownloads(
+          (products ?? [])
+            .filter((product) => product.template_pdf_url?.trim())
+            .map((product) => ({
+              productId: product.id,
+              productName: product.name,
+              pdfUrl: product.template_pdf_url!,
+            }))
+        );
+      } else {
+        setTemplateDownloads([]);
+      }
     } catch (error: any) {
       console.error('Error fetching order details:', error);
       toast({
@@ -135,6 +176,42 @@ const OrderDetailPage = () => {
       navigate('/orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendTemplateEmail = async () => {
+    if (!order) return;
+
+    try {
+      setResending(true);
+      const { data, error } = await supabase.functions.invoke('resend-template-email', {
+        body: { order_id: order.id },
+      });
+
+      if (error || !data?.success) {
+        const message = await getEdgeFunctionErrorMessage(
+          error,
+          data,
+          'Failed to resend template email',
+        );
+        throw new Error(message);
+      }
+
+      toast({
+        title: 'Email sent',
+        description: `Your template PDF has been sent to ${order.customer_email}.`,
+      });
+
+      fetchOrderDetails();
+    } catch (error: unknown) {
+      console.error('Error resending template email:', error);
+      toast({
+        title: 'Could not send email',
+        description: error instanceof Error ? error.message : 'Please try again or use the download links below.',
+        variant: 'destructive',
+      });
+    } finally {
+      setResending(false);
     }
   };
 
@@ -167,12 +244,8 @@ const OrderDetailPage = () => {
     }
   };
 
-  const canCancelOrder = (order: Order) => {
-    return order.fulfillment_status === 'pending' || order.fulfillment_status === 'processing';
-  };
-
   const canRequestReturn = (order: Order) => {
-    return order.fulfillment_status === 'delivered';
+    return order.fulfillment_status === 'delivered' && !isTemplateOrder(order);
   };
 
   useEffect(() => {
@@ -314,6 +387,42 @@ const OrderDetailPage = () => {
                 </CardContent>
               </Card>
 
+              {isTemplateOrder(order) && order.payment_status === 'paid' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Download className="h-5 w-5" />
+                      Template Downloads
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Your PDF was sent to {order.customer_email}. You can also download it directly below.
+                    </p>
+
+                    {templateDownloads.length > 0 ? (
+                      <div className="space-y-2">
+                        {templateDownloads.map((item) => (
+                          <Button
+                            key={item.productId}
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => window.open(item.pdfUrl, '_blank')}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download {item.productName}
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+                        PDF links are not available yet. Use &quot;Resend PDF to Email&quot; or contact support if the issue persists.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Order Timeline */}
               {events.length > 0 && (
                 <Card>
@@ -408,6 +517,27 @@ const OrderDetailPage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="space-y-2">
+                    {canResendTemplateEmail(order) && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={handleResendTemplateEmail}
+                        disabled={resending}
+                      >
+                        {resending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Resend PDF to Email
+                          </>
+                        )}
+                      </Button>
+                    )}
+
                     {canCancelOrder(order) && (
                       <Button
                         variant="destructive"

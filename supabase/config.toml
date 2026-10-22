@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.verify-razorpay-payment]
 verify_jwt = true
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.resend-template-email]
+verify_jwt = true

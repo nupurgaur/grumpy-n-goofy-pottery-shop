@@ -1,117 +1,212 @@
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Mail, Phone, MapPin, Instagram, Youtube } from "lucide-react";
+import { Mail, MapPin, Instagram, Youtube } from "lucide-react";
 import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
+import { INSTAGRAM_URL } from "@/config/social";
 import { typography } from "@/config/typography";
+import { useDesignYourPotVisible } from "@/hooks/useDesignYourPotVisible";
+
+const EXPLORE_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/?category=all#shop" },
+  { label: "Design Your Pot", href: "/design-your-pot" },
+  { label: "Workshops", href: "/workshop" },
+  { label: "Templates", href: "/templates" },
+  { label: "Blog", href: "/blogs" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/contact" },
+] as const;
+
+const RESOURCE_LINKS = [
+  { label: "Shipping Policy", href: "/shipping-policy" },
+  { label: "Refund Policy", href: "/refund-policy" },
+  { label: "Cancellation Policy", href: "/cancellation-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+] as const;
+
+const SOCIAL_LINKS = [
+  {
+    label: "Instagram",
+    href: INSTAGRAM_URL,
+    Icon: Instagram,
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/channel/UCwve4LS858Se5FqKv9xYisA",
+    Icon: Youtube,
+  },
+] as const;
+
+const footerHeading = `text-xs uppercase tracking-[0.14em] text-[#f5f3ef] mb-5 ${typography.subheading} font-semibold`;
+const footerLink =
+  "text-sm text-[#f5f3ef]/75 hover:text-[#E88CA3] transition-colors";
+const footerText = "text-sm text-[#f5f3ef]/75 leading-relaxed";
+
+const FooterColumn = ({
+  title,
+  children,
+  className = "",
+}: {
+  title: string;
+  children: ReactNode;
+  className?: string;
+}) => (
+  <div className={className}>
+    <h4 className={footerHeading}>{title}</h4>
+    {children}
+  </div>
+);
 
 const Footer = () => {
+  const { visible: designPotVisible } = useDesignYourPotVisible();
+  const exploreLinks = EXPLORE_LINKS.filter(
+    (link) => link.href !== "/design-your-pot" || designPotVisible,
+  );
+
   return (
-    <footer
-      className="text-[#f5f3ef]"
-      style={{ backgroundColor: BRAND_NAVY }}
-    >
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="space-y-4">
+    <footer className="text-[#f5f3ef]" style={{ backgroundColor: BRAND_NAVY }}>
+      <div className="container mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-x-10 lg:gap-y-12 items-start">
+          {/* Column 1 — Brand */}
+          <div className="sm:col-span-2 lg:col-span-1 space-y-5">
             <img
               src={BRAND_LOGO_FOOTER}
               alt={`${BRAND_NAME} logo`}
-              className="h-32 sm:h-40 w-auto max-w-full object-contain object-left"
+              className="h-28 sm:h-32 w-auto max-w-[220px] object-contain object-left"
             />
-            <p className="text-[#f5f3ef]/80">
-              Bringing quirky charm to your daily rituals through handcrafted pottery 
-              made with love and attention to detail.
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Home</a>
-              </li>
-              <li>
-                <a href="/?category=all#shop" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Shop</a>
-              </li>
-              <li>
-                <a href="/#about" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">About</a>
-              </li>
-              <li>
-                <a href="/refund-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Refund Policy</a>
-              </li>
-              <li>
-                <a href="/shipping-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Shipping Policy</a>
-              </li>
-              <li>
-                <a href="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="/contact" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Contact Us</a>
-              </li>
-              <li>
-                <a href="/terms-and-conditions" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Terms & Conditions</a>
-              </li>
-              <li>
-                <a href="/cancellation-policy" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Cancellation Policy</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div id="contact">
-            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Get in Touch</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Mail className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">grumpyngoofy@gmail.com</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="h-4 w-4 text-primary-foreground/80" />
-                <span className="text-primary-foreground/80">Mumbai, India</span>
-              </div>
+            <div className="space-y-3 max-w-xs">
+              <p
+                className={`text-sm leading-snug text-[#f5f3ef] ${typography.title}`}
+              >
+                Making pottery feel less intimidating.
+              </p>
+              <p className="text-xs text-[#f5f3ef]/65 font-sans leading-relaxed">
+                Handmade ceramics, workshops, templates, and a growing clay
+                community.
+              </p>
             </div>
           </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className={`text-lg mb-4 ${typography.subheading}`}>Stay Updated</h4>
-            <p className="text-primary-foreground/80 text-sm mb-4">
-              Get the latest pottery pieces and studio updates delivered to your inbox.
+          {/* Column 2 — Explore */}
+          <FooterColumn title="Explore">
+            <ul className="space-y-2.5">
+              {exploreLinks.map((link) => (
+                <li key={link.label}>
+                  {link.label === "About" ? (
+                    <Link
+                      to={{ pathname: "/", hash: "about" }}
+                      className={footerLink}
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className={footerLink}>
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </FooterColumn>
+
+          {/* Column 3 — Resources */}
+          <FooterColumn title="Resources">
+            <ul className="space-y-2.5">
+              {RESOURCE_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} className={footerLink}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </FooterColumn>
+
+          {/* Column 4 — Connect */}
+          <FooterColumn title="Connect">
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="mailto:grumpyngoofy@gmail.com"
+                  className={`${footerText} inline-flex items-center gap-2.5 hover:text-[#E88CA3] transition-colors`}
+                >
+                  <Mail className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
+                  grumpyngoofy@gmail.com
+                </a>
+              </li>
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${footerText} inline-flex items-center gap-2.5 hover:text-[#E88CA3] transition-colors`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
+                    {label}
+                  </a>
+                </li>
+              ))}
+              <li className={`${footerText} inline-flex items-center gap-2.5`}>
+                <MapPin className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
+                Delhi NCR, India
+              </li>
+            </ul>
+          </FooterColumn>
+
+          {/* Column 5 — Join the Clay Club */}
+          <FooterColumn
+            title="Join the Clay Club"
+            className="sm:col-span-2 lg:col-span-1"
+          >
+            <p className="text-xs text-[#f5f3ef]/65 font-sans leading-relaxed mb-4">
+              Get workshop announcements, new collections, and studio updates.
             </p>
-            <div className="space-y-3">
+            <form
+              className="space-y-3"
+              onSubmit={(e) => e.preventDefault()}
+              aria-label="Newsletter signup"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full px-3 py-2 rounded-md bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30"
+                className="w-full px-3 py-2.5 text-sm rounded-md bg-[#f5f3ef]/10 border border-[#f5f3ef]/20 text-[#f5f3ef] placeholder:text-[#f5f3ef]/50 focus:outline-none focus:ring-2 focus:ring-[#E88CA3]/40"
               />
-              <Button variant="secondary" className="w-full">
-                Subscribe
+              <Button
+                type="submit"
+                variant="secondary"
+                className="w-full bg-[#E88CA3] text-[#0D2B52] hover:bg-[#E88CA3]/90 font-medium"
+              >
+                Join the Club
               </Button>
-            </div>
-          </div>
+            </form>
+          </FooterColumn>
         </div>
 
-        {/* Bottom */}
-        <div className="border-t border-primary-foreground/20 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center space-x-2 text-primary-foreground/80">
-            <span>Made with</span>
-            <Heart className="h-4 w-4 text-secondary fill-current" />
-            <span>in Mumbai, India</span>
-          </div>
+        {/* Bottom bar */}
+        <div className="border-t border-[#f5f3ef]/15 mt-14 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p
+            className={`text-sm text-[#f5f3ef]/80 italic ${typography.title}`}
+          >
+            From software to stoneware.
+          </p>
 
-          {/* Social Links */}
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            {[
-              { Icon: Instagram, href: "https://www.instagram.com/grumpyngoofy/", label: "Instagram" },
-              { Icon: Youtube, href: "https://www.youtube.com/channel/UCwve4LS858Se5FqKv9xYisA", label: "YouTube" }
-            ].map(({ Icon, href, label }, index) => (
-              <a key={index} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                <Button variant="ghost" size="icon" className="text-primary-foreground/80 hover:text-primary-foreground">
+          <div className="flex items-center gap-2">
+            {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-[#f5f3ef]/70 hover:text-[#E88CA3] hover:bg-[#f5f3ef]/10"
+                >
                   <Icon className="h-5 w-5" />
                 </Button>
               </a>
@@ -119,9 +214,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="text-center text-primary-foreground/60 text-sm mt-4">
+        <p className="text-center text-[#f5f3ef]/50 text-xs mt-6 font-sans">
           © {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.
-        </div>
+        </p>
       </div>
     </footer>
   );

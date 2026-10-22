@@ -12,6 +12,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CreditCard, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BRAND_NAME } from '@/config/brand';
+import { isCustomPotCartItem } from '@/config/potCustomizer';
+import { getWorkshopTicketLimits, isWorkshopCartItem } from '@/config/workshops';
+import { isDateAllowedForWorkshop } from '@/lib/workshopSchedule';
+import { cn } from '@/lib/utils';
+import { WorkshopParticipantForm } from '@/components/workshops/WorkshopParticipantForm';
+import {
+  createEmptyParticipants,
+  getCartItemLineTotal,
+  getRequiredParticipantCount,
+  getWorkshopAddonTotal,
+  getWorkshopBookingMeta,
+  resizeParticipants,
+  serializeParticipantsForOrder,
+  validateWorkshopParticipants,
+  type WorkshopParticipant,
+} from '@/lib/workshopParticipants';
 
 declare global {
   interface Window {
@@ -53,7 +69,7 @@ interface PincodeDetails {
 }
 
 const Checkout = () => {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, updateWorkshopParticipants } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -67,6 +83,10 @@ const Checkout = () => {
     shipping: null,
     billing: null
   });
+  const [productMeta, setProductMeta] = useState<Record<number, { is_template: boolean }>>({});
+  const [participantsByItemId, setParticipantsByItemId] = useState<
+    Record<string, WorkshopParticipant[]>
+  >({});
 
   const emptyAddress: ShippingAddress = {
     addressLine1: '',
@@ -92,6 +112,67 @@ const Checkout = () => {
       setFormData(prev => ({ ...prev, customerEmail: user.email || '' }));
     }
   }, [user?.email]);
+
+  useEffect(() => {
+    setParticipantsByItemId((prev) => {
+      const next: Record<string, WorkshopParticipant[]> = {};
+
+      items.forEach((item) => {
+        if (!isWorkshopCartItem(item.product_id, item.product_name)) return;
+
+        const booking = getWorkshopBookingMeta(item);
+        if (!booking) return;
+
+        const required = getRequiredParticipantCount(booking.scheduleId, item.quantity);
+        const existing =
+          item.workshop_booking?.participants ??
+          prev[item.id] ??
+          createEmptyParticipants(required);
+
+        next[item.id] = resizeParticipants(
+          existing.map((participant) => ({
+            name: participant.name ?? "",
+            age: String(participant.age ?? ""),
+          })),
+          required,
+        );
+      });
+
+      return next;
+    });
+  }, [items]);
+
+  useEffect(() => {
+    const productIds = items
+      .filter((item) =>
+        !isWorkshopCartItem(item.product_id, item.product_name) &&
+        !isCustomPotCartItem(item.product_id, item.product_name)
+      )
+      .map((item) => item.product_id);
+
+    if (productIds.length === 0) {
+      setProductMeta({});
+      return;
+    }
+
+    let cancelled = false;
+    supabase
+      .from('products')
+      .select('id, is_template')
+      .in('id', productIds)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const next: Record<number, { is_template: boolean }> = {};
+        for (const row of data) {
+          next[row.id] = { is_template: row.is_template === true };
+        }
+        setProductMeta(next);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   const handleInputChange = (field: keyof CheckoutFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -192,7 +273,101 @@ const Checkout = () => {
     });
   };
 
+  const isWorkshopOnlyCheckout = items.length > 0 && items.every((item) =>
+    isWorkshopCartItem(item.product_id, item.product_name),
+  );
+
+  const itemNeedsShipping = (item: (typeof items)[number]) => {
+    if (isWorkshopCartItem(item.product_id, item.product_name)) return false;
+    if (isCustomPotCartItem(item.product_id, item.product_name)) return true;
+    return !productMeta[item.product_id]?.is_template;
+  };
+
+  const needsShipping = items.some(itemNeedsShipping);
+
+  const isTemplateOnlyCheckout = items.length > 0 && items.every((item) => {
+    if (isWorkshopCartItem(item.product_id, item.product_name)) return false;
+    if (isCustomPotCartItem(item.product_id, item.product_name)) return false;
+    return productMeta[item.product_id]?.is_template === true;
+  });
+
+  const isDigitalOnlyCheckout = !needsShipping;
+
+  const hasWorkshopItems = items.some((item) =>
+    isWorkshopCartItem(item.product_id, item.product_name),
+  );
+
+  const workshopValidation = (() => {
+    if (!hasWorkshopItems) {
+      return { valid: true, errors: [] as string[] };
+    }
+
+    const errors: string[] = [];
+    items.forEach((item) => {
+      if (!isWorkshopCartItem(item.product_id, item.product_name)) return;
+
+      const booking = getWorkshopBookingMeta(item);
+      if (!booking) {
+        errors.push("Workshop booking details are missing.");
+        return;
+      }
+
+      const limits = getWorkshopTicketLimits(booking.scheduleId);
+      if (item.quantity < limits.min || item.quantity > limits.max) {
+        errors.push(
+          booking.scheduleId === "date-night"
+            ? "Date Night is limited to one couple per time slot."
+            : booking.scheduleId === "private-clay-parties"
+              ? `Private clay parties are for ${limits.min} to ${limits.max} guests.`
+              : `Drop-in sessions are limited to ${limits.max} people. For a larger group, book a private clay party.`,
+        );
+      }
+
+      const [year, month, day] = booking.sessionDate.split("-").map(Number);
+      const sessionDate = new Date(year, month - 1, day);
+      if (!isDateAllowedForWorkshop(booking.scheduleId, sessionDate)) {
+        errors.push("Workshops must be booked at least one day in advance, Wednesday through Sunday.");
+      }
+
+      const result = validateWorkshopParticipants(
+        booking.scheduleId,
+        item.quantity,
+        participantsByItemId[item.id] ?? [],
+      );
+      errors.push(...result.errors);
+    });
+
+    return { valid: errors.length === 0, errors };
+  })();
+
+  const checkoutBasicsReady = Boolean(
+    formData.customerName.trim() &&
+    formData.customerEmail.trim() &&
+    (isTemplateOnlyCheckout || formData.customerPhone.trim()),
+  );
+
+  const canSubmitPayment =
+    checkoutBasicsReady && (!hasWorkshopItems || workshopValidation.valid);
+
+  const handleParticipantChange = (
+    cartItemId: string,
+    participants: WorkshopParticipant[],
+  ) => {
+    setParticipantsByItemId((prev) => ({ ...prev, [cartItemId]: participants }));
+  };
+
   const handlePayment = async () => {
+    if (!canSubmitPayment) {
+      toast({
+        title: "Complete booking details",
+        description: hasWorkshopItems
+          ? workshopValidation.errors[0] || "Add all participant names and ages before paying."
+          : "Please fill in all required details before paying.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -211,62 +386,83 @@ const Checkout = () => {
       return;
     }
 
-    // Validate form
-    const { shippingAddress, billingAddress } = formData;
-    if (
-      !formData.customerName || 
-      !formData.customerEmail || 
-      !shippingAddress.addressLine1 ||
-      !shippingAddress.city ||
-      !shippingAddress.state ||
-      !shippingAddress.pincode
-    ) {
+    if (!formData.customerName || !formData.customerEmail) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields including complete shipping address.",
+        description: "Please fill in your name and email.",
         variant: "destructive"
       });
       return;
     }
 
-    // Validate pincode
-    if (pincodeValid.shipping === false) {
+    if (!isTemplateOnlyCheckout && !formData.customerPhone) {
       toast({
-        title: "Invalid Shipping Pincode",
-        description: "Please verify your shipping pincode before proceeding.",
+        title: "Missing Information",
+        description: "Please fill in your phone number.",
         variant: "destructive"
       });
       return;
     }
 
-    // Validate billing address if not same as shipping
-    if (!formData.sameAsShipping) {
+    const { shippingAddress, billingAddress } = formData;
+
+    if (needsShipping) {
       if (
-        !billingAddress.addressLine1 ||
-        !billingAddress.city ||
-        !billingAddress.state ||
-        !billingAddress.pincode
+        !shippingAddress.addressLine1 ||
+        !shippingAddress.city ||
+        !shippingAddress.state ||
+        !shippingAddress.pincode
       ) {
         toast({
-          title: "Missing Billing Information",
-          description: "Please fill in all required billing address fields.",
+          title: "Missing Information",
+          description: "Please fill in all required fields including complete shipping address.",
           variant: "destructive"
         });
         return;
       }
 
-      if (pincodeValid.billing === false) {
+      if (pincodeValid.shipping === false) {
         toast({
-          title: "Invalid Billing Pincode",
-          description: "Please verify your billing pincode before proceeding.",
+          title: "Invalid Shipping Pincode",
+          description: "Please verify your shipping pincode before proceeding.",
           variant: "destructive"
         });
         return;
+      }
+
+      if (!formData.sameAsShipping) {
+        if (
+          !billingAddress.addressLine1 ||
+          !billingAddress.city ||
+          !billingAddress.state ||
+          !billingAddress.pincode
+        ) {
+          toast({
+            title: "Missing Billing Information",
+            description: "Please fill in all required billing address fields.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (pincodeValid.billing === false) {
+          toast({
+            title: "Invalid Billing Pincode",
+            description: "Please verify your billing pincode before proceeding.",
+            variant: "destructive"
+          });
+          return;
+        }
       }
     }
 
     try {
       setLoading(true);
+
+      for (const item of items) {
+        if (!isWorkshopCartItem(item.product_id, item.product_name)) continue;
+        await updateWorkshopParticipants(item.id, participantsByItemId[item.id] ?? []);
+      }
 
       // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
@@ -310,6 +506,28 @@ const Checkout = () => {
         },
         handler: async (response: any) => {
           try {
+            const paymentCartItems = items.map((item) => {
+              if (!isWorkshopCartItem(item.product_id, item.product_name)) {
+                return item;
+              }
+
+              const booking = getWorkshopBookingMeta(item);
+              if (!booking) return item;
+
+              return {
+                ...item,
+                workshop_booking: {
+                  scheduleId: booking.scheduleId,
+                  sessionDate: booking.sessionDate,
+                  slot: booking.slot,
+                  addOns: booking.addOns,
+                  participants: serializeParticipantsForOrder(
+                    participantsByItemId[item.id] ?? [],
+                  ),
+                },
+              };
+            });
+
             // Verify payment
             const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
@@ -321,15 +539,30 @@ const Checkout = () => {
                   customer_name: formData.customerName,
                   customer_email: formData.customerEmail,
                   customer_phone: formData.customerPhone,
-                  shipping_address: `${formData.shippingAddress.addressLine1}\n${formData.shippingAddress.addressLine2 ? formData.shippingAddress.addressLine2 + '\n' : ''}${formData.shippingAddress.city}, ${formData.shippingAddress.state} ${formData.shippingAddress.pincode}\n${formData.shippingAddress.country}`,
-                  billing_address: formData.sameAsShipping 
-                    ? `${formData.shippingAddress.addressLine1}\n${formData.shippingAddress.addressLine2 ? formData.shippingAddress.addressLine2 + '\n' : ''}${formData.shippingAddress.city}, ${formData.shippingAddress.state} ${formData.shippingAddress.pincode}\n${formData.shippingAddress.country}`
-                    : `${formData.billingAddress.addressLine1}\n${formData.billingAddress.addressLine2 ? formData.billingAddress.addressLine2 + '\n' : ''}${formData.billingAddress.city}, ${formData.billingAddress.state} ${formData.billingAddress.pincode}\n${formData.billingAddress.country}`,
-                  shipping_address_details: formData.shippingAddress,
-                  billing_address_details: formData.sameAsShipping ? formData.shippingAddress : formData.billingAddress,
+                  order_type: isWorkshopOnlyCheckout
+                    ? 'workshop'
+                    : isTemplateOnlyCheckout
+                      ? 'template'
+                      : 'product',
+                  shipping_address: isDigitalOnlyCheckout
+                    ? isTemplateOnlyCheckout
+                      ? 'Digital template download — delivered by email'
+                      : 'Workshop booking — in-studio session (no shipping required)'
+                    : `${formData.shippingAddress.addressLine1}\n${formData.shippingAddress.addressLine2 ? formData.shippingAddress.addressLine2 + '\n' : ''}${formData.shippingAddress.city}, ${formData.shippingAddress.state} ${formData.shippingAddress.pincode}\n${formData.shippingAddress.country}`,
+                  billing_address: isDigitalOnlyCheckout
+                    ? isTemplateOnlyCheckout
+                      ? 'Digital template download — delivered by email'
+                      : 'Workshop booking — in-studio session (no shipping required)'
+                    : formData.sameAsShipping
+                      ? `${formData.shippingAddress.addressLine1}\n${formData.shippingAddress.addressLine2 ? formData.shippingAddress.addressLine2 + '\n' : ''}${formData.shippingAddress.city}, ${formData.shippingAddress.state} ${formData.shippingAddress.pincode}\n${formData.shippingAddress.country}`
+                      : `${formData.billingAddress.addressLine1}\n${formData.billingAddress.addressLine2 ? formData.billingAddress.addressLine2 + '\n' : ''}${formData.billingAddress.city}, ${formData.billingAddress.state} ${formData.billingAddress.pincode}\n${formData.billingAddress.country}`,
+                  shipping_address_details: isDigitalOnlyCheckout ? null : formData.shippingAddress,
+                  billing_address_details: isDigitalOnlyCheckout
+                    ? null
+                    : formData.sameAsShipping ? formData.shippingAddress : formData.billingAddress,
                   total_amount: totalPrice
                 },
-                cart_items: items
+                cart_items: paymentCartItems
               }
             });
 
@@ -339,7 +572,11 @@ const Checkout = () => {
 
             toast({
               title: "Payment Successful!",
-              description: `Order ${verifyData.order_id} has been placed successfully.`
+              description: isTemplateOnlyCheckout
+                ? "Your template PDF has been sent to your email."
+                : isWorkshopOnlyCheckout
+                  ? "Your workshop booking is confirmed. Check your email for details."
+                  : `Order ${verifyData.order_id} has been placed successfully.`,
             });
 
             // Clear cart and reset form
@@ -411,24 +648,36 @@ const Checkout = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {items.map((item) => (
+            {items.map((item) => {
+              const isCustomPot = isCustomPotCartItem(item.product_id, item.product_name);
+
+              return (
               <div key={item.id} className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <img 
                     src={item.product_image} 
                     alt={item.product_name}
-                    className="w-12 h-12 object-cover rounded"
+                    className={cn(
+                      "w-12 h-12 rounded shrink-0",
+                      isCustomPot ? "object-contain bg-[#FAF6F0]" : "object-cover",
+                    )}
                   />
                   <div>
                     <p className="font-medium">{item.product_name}</p>
                     <p className="text-sm text-muted-foreground">
                       ₹{item.product_price} × {item.quantity}
+                      {getWorkshopAddonTotal(item.workshop_booking) > 0
+                        ? ` + ${(item.workshop_booking?.addOns ?? [])
+                            .map((addon) => `${addon.label} ₹${addon.price}`)
+                            .join(", ")}`
+                        : ""}
                     </p>
                   </div>
                 </div>
-                <p className="font-medium">₹{(item.product_price * item.quantity).toFixed(2)}</p>
+                <p className="font-medium">₹{getCartItemLineTotal(item).toFixed(2)}</p>
               </div>
-            ))}
+            );
+            })}
             <div className="border-t pt-4">
               <div className="flex justify-between items-center font-bold text-lg">
                 <span>Total</span>
@@ -442,9 +691,24 @@ const Checkout = () => {
       {/* Checkout Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Shipping Information</CardTitle>
+          <CardTitle>
+            {isDigitalOnlyCheckout ? "Your Details" : "Shipping Information"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isTemplateOnlyCheckout && (
+            <p className="text-sm text-muted-foreground font-sans">
+              Digital templates are delivered by email — no shipping address needed.
+              Your PDF download link will be sent after payment.
+            </p>
+          )}
+          {isWorkshopOnlyCheckout && (
+            <p className="text-sm text-muted-foreground font-sans">
+              Workshop bookings are in-studio sessions — no shipping address needed.
+              We&apos;ll email your booking details after payment.
+            </p>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="customerName">Full Name *</Label>
@@ -469,6 +733,7 @@ const Checkout = () => {
             </div>
           </div>
 
+          {!isTemplateOnlyCheckout && (
           <div>
             <Label htmlFor="customerPhone">Phone Number *</Label>
             <Input
@@ -479,7 +744,10 @@ const Checkout = () => {
               required
             />
           </div>
+          )}
 
+          {needsShipping && (
+          <>
           <Separator className="my-4" />
 
           <div>
@@ -716,10 +984,21 @@ const Checkout = () => {
               </div>
             </>
           )}
+          </>
+          )}
+
+          {hasWorkshopItems && (
+            <WorkshopParticipantForm
+              items={items}
+              participantsByItemId={participantsByItemId}
+              onChange={handleParticipantChange}
+              validationErrors={workshopValidation.errors}
+            />
+          )}
 
           <Button 
             onClick={handlePayment} 
-            disabled={loading} 
+            disabled={loading || !canSubmitPayment} 
             className="w-full"
             size="lg"
           >

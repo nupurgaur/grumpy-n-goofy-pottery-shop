@@ -5,6 +5,9 @@ import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { isCustomPotCartItem } from "@/config/potCustomizer";
+import { isWorkshopCartItem } from "@/config/workshops";
+import { getCartItemLineTotal, getWorkshopAddonTotal } from "@/lib/workshopParticipants";
 
 type CartIconProps = {
   buttonClassName?: string;
@@ -122,39 +125,61 @@ const CartItem = ({
   onUpdateQuantity: (id: number, quantity: number) => void;
   onRemove: (id: number) => void;
 }) => {
+  const isCustomPot = isCustomPotCartItem(item.product_id, item.product_name);
+
   return (
     <div className="flex items-center space-x-3 p-3 border rounded-lg">
       <img 
         src={item.product_image} 
         alt={item.product_name}
-        className="w-16 h-16 object-cover rounded-md"
+        className={cn(
+          "w-16 h-16 rounded-md shrink-0",
+          isCustomPot ? "object-contain bg-[#FAF6F0]" : "object-cover",
+        )}
       />
       
       <div className="flex-1 space-y-1">
         <h4 className="font-medium text-sm">{item.product_name}</h4>
+        {isCustomPot && (
+          <p className="text-xs text-muted-foreground">Made to order</p>
+        )}
         <p className="text-sm text-muted-foreground">₹{item.product_price}</p>
+        {getWorkshopAddonTotal(item.workshop_booking) > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {(item.workshop_booking?.addOns ?? [])
+              .map((addon) => `${addon.label} ₹${addon.price}`)
+              .join(", ")}
+          </p>
+        )}
         
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onUpdateQuantity(item.product_id, item.quantity - 1)}
-            disabled={item.quantity <= 1}
-          >
-            <Minus className="h-3 w-3" />
-          </Button>
-          
-          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onUpdateQuantity(item.product_id, item.quantity + 1)}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
+          {!isWorkshopCartItem(item.product_id, item.product_name) && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onUpdateQuantity(item.product_id, item.quantity - 1)}
+                disabled={item.quantity <= 1}
+              >
+                <Minus className="h-3 w-3" />
+              </Button>
+              
+              <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onUpdateQuantity(item.product_id, item.quantity + 1)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </>
+          )}
+          {isWorkshopCartItem(item.product_id, item.product_name) && (
+            <span className="text-sm font-medium">{item.quantity}</span>
+          )}
           
           <Button
             variant="ghost"
@@ -168,7 +193,7 @@ const CartItem = ({
       </div>
       
       <div className="text-right">
-        <p className="font-medium text-sm">₹{(item.product_price * item.quantity).toFixed(2)}</p>
+        <p className="font-medium text-sm">₹{getCartItemLineTotal(item).toFixed(2)}</p>
       </div>
     </div>
   );

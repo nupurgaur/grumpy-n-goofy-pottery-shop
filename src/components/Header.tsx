@@ -1,31 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Menu, User, LogOut, Settings, Heart, ChevronDown, Package } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
 import { useWishlist } from "@/hooks/useWishlist";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
+import { navigateToAbout } from "@/lib/navigateToAbout";
+import { useDesignYourPotVisible } from "@/hooks/useDesignYourPotVisible";
 
 const headerText = "text-[#f5f3ef]";
 const headerHover = "text-[#f5f3ef] hover:text-white hover:bg-white/10";
 const navLink =
-  "text-base lg:text-lg font-medium text-[#f5f3ef]/90 hover:text-[#f5f3ef] transition-colors";
+  "text-[#f5f3ef]/80 hover:text-[#f5f3ef] transition-colors";
 
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { wishlist } = useWishlist();
+  const { visible: designPotVisible } = useDesignYourPotVisible();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const categories = [
-    { value: 'all', label: 'All Products' },
-    { value: 'mugs', label: 'Mugs' },
-    { value: 'bowls', label: 'Bowls' },
-    { value: 'plates', label: 'Plates' },
-    { value: 'ceramic-clocks', label: 'Ceramic Clocks' },
-    { value: 'lamps', label: 'Lamps' },
-    { value: 'spoon-rests', label: 'Spoon Rests' },
-    { value: 'vases', label: 'Vases' },
+    { value: "all", label: "All Products" },
+    { value: "mugs", label: "Mugs" },
+    { value: "bowls", label: "Bowls" },
+    { value: "plates", label: "Plates" },
+    { value: "ceramic-clocks", label: "Ceramic Clocks" },
+    { value: "lamps", label: "Lamps" },
+    { value: "spoon-rests", label: "Spoon Rests" },
+    { value: "vases", label: "Vases" },
   ];
 
   return (
@@ -47,36 +51,58 @@ const Header = () => {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
           <Link to="/" className={navLink}>
             Home
           </Link>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger className={`flex items-center space-x-1 ${navLink}`}>
-              <span>Shop</span>
-              <ChevronDown className="h-5 w-5 shrink-0" />
+              <span>Products</span>
+              <ChevronDown className="h-4 w-4 shrink-0" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               {categories.map((category) => (
                 <DropdownMenuItem key={category.value} asChild>
-                  <Link
-                    to={`/?category=${encodeURIComponent(category.value)}#shop`}
-                    className="cursor-pointer"
-                  >
-                    {category.label}
-                  </Link>
+                  {"href" in category && category.href ? (
+                    <Link to={category.href} className="cursor-pointer">
+                      {category.label}
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/?category=${encodeURIComponent(category.value)}#shop`}
+                      className="cursor-pointer"
+                    >
+                      {category.label}
+                    </Link>
+                  )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <Link to="/#about" className={navLink}>
+
+          {designPotVisible && (
+            <Link to="/design-your-pot" className={navLink}>
+              Design Your Own Pot
+            </Link>
+          )}
+          <Link to="/workshop" className={navLink}>
+            Workshop
+          </Link>
+          <Link to="/templates" className={navLink}>
+            Templates
+          </Link>
+          <Link to="/blogs" className={navLink}>
+            Blogs
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => navigateToAbout(navigate, location.pathname)}
+            className={navLink}
+          >
             About
-          </Link>
-          <Link to="/contact" className={navLink}>
-            Contact
-          </Link>
+          </button>
         </nav>
 
         {/* Actions */}
@@ -114,14 +140,15 @@ const Header = () => {
           {user ? (
             <div className="flex items-center space-x-2">
               {isAdmin && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => navigate('/admin')}
-                  className={`hidden sm:flex items-center gap-1 ${headerHover}`}
+                  className={headerHover}
+                  aria-label="Admin"
+                  title="Admin"
                 >
-                  <Settings className="h-4 w-4" />
-                  <span>Admin</span>
+                  <Settings className="h-5 w-5" />
                 </Button>
               )}
               <Button 
