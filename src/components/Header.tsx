@@ -1,5 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Settings, Heart, ChevronDown, Package } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Menu, User, LogOut, Settings, Heart, ChevronDown, Package, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
@@ -15,12 +21,18 @@ const headerHover = "text-[#f5f3ef] hover:text-white hover:bg-white/10";
 const navLink =
   "text-[#f5f3ef]/80 hover:text-[#f5f3ef] transition-colors";
 
+const mobileNavLink =
+  "block w-full rounded-md px-3 py-2.5 text-left text-[#f5f3ef] hover:bg-white/10 transition-colors";
+
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { wishlist } = useWishlist();
   const { visible: designPotVisible } = useDesignYourPotVisible();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const categories = [
     { value: "all", label: "All Products" },
@@ -166,11 +178,102 @@ const Header = () => {
             </Button>
           )}
           
-          <Button variant="ghost" size="icon" className={`md:hidden ${headerHover}`}>
-            <Menu className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            className={`md:hidden ${headerHover}`}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
+
+      <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <DialogContent
+          className="fixed inset-y-0 right-0 left-auto top-0 z-[60] flex h-full w-[min(100%,18rem)] max-w-none translate-x-0 translate-y-0 flex-col gap-0 border-l border-[#f5f3ef]/15 p-0 shadow-xl data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right sm:rounded-none [&>button:last-child]:hidden"
+          style={{ backgroundColor: BRAND_NAVY }}
+        >
+          <DialogTitle className="sr-only">Site menu</DialogTitle>
+          <nav className="flex flex-1 flex-col overflow-y-auto px-4 py-6 text-[#f5f3ef]">
+            <Link to="/" className={mobileNavLink} onClick={closeMobileMenu}>
+              Home
+            </Link>
+
+            <p className="px-3 pt-4 pb-1 text-xs font-medium uppercase tracking-wide text-[#f5f3ef]/60">
+              Products
+            </p>
+            {categories.map((category) => (
+              <Link
+                key={category.value}
+                to={
+                  "href" in category && category.href
+                    ? category.href
+                    : `/?category=${encodeURIComponent(category.value)}#shop`
+                }
+                className={`${mobileNavLink} pl-6 text-sm`}
+                onClick={closeMobileMenu}
+              >
+                {category.label}
+              </Link>
+            ))}
+
+            {designPotVisible && (
+              <Link to="/design-your-pot" className={mobileNavLink} onClick={closeMobileMenu}>
+                Design Your Own Pot
+              </Link>
+            )}
+            <Link to="/workshop" className={mobileNavLink} onClick={closeMobileMenu}>
+              Workshop
+            </Link>
+            <Link to="/templates" className={mobileNavLink} onClick={closeMobileMenu}>
+              Templates
+            </Link>
+            <Link to="/blogs" className={mobileNavLink} onClick={closeMobileMenu}>
+              Blogs
+            </Link>
+            <button
+              type="button"
+              className={mobileNavLink}
+              onClick={() => {
+                closeMobileMenu();
+                navigateToAbout(navigate, location.pathname);
+              }}
+            >
+              About
+            </button>
+
+            <div className="mt-auto border-t border-[#f5f3ef]/15 pt-4">
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Link to="/admin" className={mobileNavLink} onClick={closeMobileMenu}>
+                      Admin
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    className={mobileNavLink}
+                    onClick={() => {
+                      closeMobileMenu();
+                      signOut();
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link to="/auth" className={mobileNavLink} onClick={closeMobileMenu}>
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </nav>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };
