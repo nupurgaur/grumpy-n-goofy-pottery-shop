@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BRAND_NAME } from "@/config/brand";
+import { CONTACT_EMAIL } from "@/config/contact";
 import { typography } from "@/config/typography";
 
 const ShippingPolicy = () => {
@@ -48,7 +49,7 @@ const ShippingPolicy = () => {
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Order Tracking</h2>
             <p>
-              You’ll receive tracking details by email/SMS after dispatch. For assistance, write to <strong>grumpyngoofy@gmail.com</strong> with your order ID.
+              You’ll receive tracking details by email/SMS after dispatch. For assistance, write to <strong>{CONTACT_EMAIL}</strong> with your order ID.
             </p>
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Damages in Transit</h2>

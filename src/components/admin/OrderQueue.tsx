@@ -18,6 +18,8 @@ import {
   Download
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { isTemplateOrder } from '@/lib/orderHelpers';
+import { getEdgeFunctionErrorMessage } from '@/lib/edgeFunctionError';
 
 type Order = Tables<'orders'> & {
   order_items: Tables<'order_items'>[];
@@ -26,6 +28,8 @@ type Order = Tables<'orders'> & {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'delivered':
+    case 'template_delivered':
+    case 'workshop_confirmed':
       return 'bg-green-100 text-green-800';
     case 'shipped':
     case 'out_for_delivery':
@@ -51,6 +55,10 @@ const getStatusText = (status: string) => {
       return 'Out for Delivery';
     case 'delivered':
       return 'Delivered';
+    case 'template_delivered':
+      return 'Delivered (PDF emailed)';
+    case 'workshop_confirmed':
+      return 'Workshop Confirmed';
     case 'cancelled':
       return 'Cancelled';
     case 'returned':
@@ -127,6 +135,45 @@ const OrderQueue = () => {
         const newSet = new Set(prev);
         newSet.delete(orderId);
         return newSet;
+      });
+    }
+  };
+
+  const resendTemplateEmail = async (orderId: string) => {
+    try {
+      setProcessingOrders(prev => new Set(prev).add(orderId));
+
+      const { data, error } = await supabase.functions.invoke('resend-template-email', {
+        body: { order_id: orderId },
+      });
+
+      if (error || !data?.success) {
+        const message = await getEdgeFunctionErrorMessage(
+          error,
+          data,
+          'Failed to resend template email',
+        );
+        throw new Error(message);
+      }
+
+      toast({
+        title: 'Template email sent',
+        description: 'The PDF download email was resent to the customer.',
+      });
+
+      fetchOrders();
+    } catch (error: any) {
+      console.error('Error resending template email:', error);
+      toast({
+        title: 'Resend failed',
+        description: error.message || 'Could not resend the template email.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingOrders(prev => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
       });
     }
   };
@@ -291,7 +338,28 @@ const OrderQueue = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 flex-wrap">
-                {!order.shiprocket_order_id && order.payment_status === 'paid' && (
+                {isTemplateOrder(order) && order.payment_status === 'paid' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => resendTemplateEmail(order.id)}
+                    disabled={processingOrders.has(order.id)}
+                  >
+                    {processingOrders.has(order.id) ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Resend PDF Email
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {!isTemplateOrder(order) && !order.shiprocket_order_id && order.payment_status === 'paid' && (
                   <Button
                     size="sm"
                     onClick={() => createShipment(order.id)}

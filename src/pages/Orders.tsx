@@ -20,6 +20,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { typography } from '@/config/typography';
+import { canCancelOrder, isTemplateOrder } from '@/lib/orderHelpers';
 
 type Order = Tables<'orders'> & {
   order_items: Tables<'order_items'>[];
@@ -28,6 +29,9 @@ type Order = Tables<'orders'> & {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'delivered':
+    case 'template_delivered':
+      return <CheckCircle className="h-4 w-4 text-green-600" />;
+    case 'workshop_confirmed':
       return <CheckCircle className="h-4 w-4 text-green-600" />;
     case 'shipped':
     case 'out_for_delivery':
@@ -44,6 +48,8 @@ const getStatusIcon = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'delivered':
+    case 'template_delivered':
+    case 'workshop_confirmed':
       return 'bg-green-100 text-green-800';
     case 'shipped':
     case 'out_for_delivery':
@@ -69,6 +75,10 @@ const getStatusText = (status: string) => {
       return 'Out for Delivery';
     case 'delivered':
       return 'Delivered';
+    case 'template_delivered':
+      return 'Delivered (PDF emailed)';
+    case 'workshop_confirmed':
+      return 'Workshop Confirmed';
     case 'cancelled':
       return 'Cancelled';
     case 'returned':
@@ -143,12 +153,8 @@ const OrdersPage = () => {
     }
   };
 
-  const canCancelOrder = (order: Order) => {
-    return order.fulfillment_status === 'pending' || order.fulfillment_status === 'processing';
-  };
-
   const canRequestReturn = (order: Order) => {
-    return order.fulfillment_status === 'delivered';
+    return order.fulfillment_status === 'delivered' && !isTemplateOrder(order);
   };
 
   useEffect(() => {

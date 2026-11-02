@@ -17,12 +17,18 @@ import ReturnRequest from "./pages/ReturnRequest";
 import NotFound from "./pages/NotFound";
 import Artist from "./pages/Artist";
 import Contact from "./pages/Contact";
+import Workshop from "./pages/Workshop";
+import Templates from "./pages/Templates";
+import Blogs from "./pages/Blogs";
+import BlogPost from "./pages/BlogPost";
 import RefundPolicy from "./pages/RefundPolicy";
 import ShippingPolicy from "./pages/ShippingPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import ProductDetail from "./pages/ProductDetail";
+import DesignYourOwnPot from "./pages/DesignYourOwnPot";
+import { ABOUT_SECTION_ID } from "@/lib/navigateToAbout";
 
 const App = () => {
   console.log('App component is rendering - no React Query should be present');
@@ -34,12 +40,17 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ScrollToHash />
+          <ScrollOnNavigate />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products/:productId" element={<ProductDetail />} />
             <Route path="/artist" element={<Artist />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/workshop" element={<Workshop />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/blogs/:slug" element={<BlogPost />} />
+            <Route path="/design-your-pot" element={<DesignYourOwnPot />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/checkout" element={<Checkout />} />
@@ -65,16 +76,37 @@ const App = () => {
 
 export default App;
 
-const ScrollToHash = () => {
+const ScrollOnNavigate = () => {
   const location = useLocation();
+
   React.useEffect(() => {
-    if (location.hash) {
-      const targetId = location.hash.slice(1);
+    if (!location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      return;
+    }
+
+    const targetId = location.hash.slice(1);
+    let attempts = 0;
+    const maxAttempts = targetId === ABOUT_SECTION_ID ? 40 : 12;
+
+    const scrollToTarget = () => {
       const el = document.getElementById(targetId);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return;
       }
-    }
-  }, [location]);
+      if (attempts < maxAttempts) {
+        attempts += 1;
+        window.setTimeout(scrollToTarget, targetId === ABOUT_SECTION_ID ? 100 : 50);
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    };
+
+    window.setTimeout(scrollToTarget, 0);
+  }, [location.pathname, location.search, location.hash]);
+
   return null;
 };

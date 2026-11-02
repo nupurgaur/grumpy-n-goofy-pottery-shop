@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useProducts } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { WORKSHOP_PLACEHOLDER_PRODUCT_IDS } from '@/config/workshops';
 import { BarChart3, Package, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 interface InventoryMovement {
@@ -49,7 +50,9 @@ const InventoryOverview = () => {
         .limit(50);
 
       if (error) throw error;
-      setMovements((data || []).map(item => ({
+      setMovements((data || [])
+        .filter((item) => !WORKSHOP_PLACEHOLDER_PRODUCT_IDS.includes(item.product_id))
+        .map(item => ({
         ...item,
         movement_type: item.movement_type as 'sale' | 'restock' | 'adjustment'
       })));

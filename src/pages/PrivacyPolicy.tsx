@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BRAND_NAME } from "@/config/brand";
+import { CONTACT_EMAIL } from "@/config/contact";
 import { typography } from "@/config/typography";
 
 const PrivacyPolicy = () => {
@@ -43,7 +44,7 @@ const PrivacyPolicy = () => {
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Your Rights</h2>
             <p>
-              You have the right to access, update, or delete your personal information. Please contact us at <strong>grumpyngoofy@gmail.com</strong> for any requests.
+              You have the right to access, update, or delete your personal information. Please contact us at <strong>{CONTACT_EMAIL}</strong> for any requests.
             </p>
           </CardContent>
         </Card>

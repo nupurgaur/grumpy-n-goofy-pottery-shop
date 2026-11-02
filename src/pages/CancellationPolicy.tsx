@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BRAND_NAME } from "@/config/brand";
+import { CONTACT_EMAIL } from "@/config/contact";
 import { typography } from "@/config/typography";
 
 const CancellationPolicy = () => {
@@ -30,7 +31,7 @@ const CancellationPolicy = () => {
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>How to Cancel</h2>
             <p>
-              To cancel your order, please email us at <strong>grumpyngoofy@gmail.com</strong> with your order ID and reason for cancellation.
+              To cancel your order, please email us at <strong>{CONTACT_EMAIL}</strong> with your order ID and reason for cancellation.
             </p>
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Refund for Cancellation</h2>

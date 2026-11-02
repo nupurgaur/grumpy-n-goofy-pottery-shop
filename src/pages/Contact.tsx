@@ -1,160 +1,374 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Leaf, HandHeart, ShieldCheck } from "lucide-react";
+import { ExternalLink, Mail, Instagram, MapPin, Navigation } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { BRAND_NAME } from "@/config/brand";
 import { typography } from "@/config/typography";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/config/social";
+import {
+  CONTACT_EMAIL,
+  GOOGLE_MAPS_DIRECTIONS_URL,
+  GOOGLE_MAPS_EMBED_URL,
+  GOOGLE_MAPS_PROFILE_URL,
+  STUDIO_ADDRESS,
+} from "@/config/contact";
+import { sendContactMessage } from "@/lib/sendContactMessage";
+import { useLocation } from "react-router-dom";
+import { useState } from "react";
+
+const QUICK_CONTACT = [
+  {
+    label: "Email",
+    icon: Mail,
+    content: (
+      <a
+        href={`mailto:${CONTACT_EMAIL}`}
+        className="text-sm text-muted-foreground hover:text-brand-secondary transition-colors"
+      >
+        {CONTACT_EMAIL}
+      </a>
+    ),
+  },
+  {
+    label: "Instagram",
+    icon: Instagram,
+    content: (
+      <a
+        href={INSTAGRAM_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-muted-foreground hover:text-brand-secondary transition-colors"
+      >
+        {INSTAGRAM_HANDLE}
+      </a>
+    ),
+  },
+  {
+    label: "Studio",
+    icon: MapPin,
+    content: (
+      <address className="text-sm text-muted-foreground not-italic leading-relaxed">
+        {STUDIO_ADDRESS}
+      </address>
+    ),
+  },
+] as const;
+
+type ContactLocationState = {
+  subject?: string;
+  message?: string;
+};
 
 const ContactPage = () => {
   const { toast } = useToast();
+  const location = useLocation();
+  const prefill = (location.state as ContactLocationState | null) ?? {};
+  const [isSending, setIsSending] = useState(false);
+
+  const scrollToForm = () => {
+    document.getElementById("contact-form")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
     const payload = {
-      name: String(formData.get('name') || ''),
-      email: String(formData.get('email') || ''),
-      phone: String(formData.get('phone') || ''),
-      comment: String(formData.get('comment') || ''),
+      name: String(formData.get("name") || ""),
+      email: String(formData.get("email") || ""),
+      subject: String(formData.get("subject") || ""),
+      comment: String(formData.get("message") || ""),
     };
 
+    setIsSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-contact-email', {
-        body: payload
+      await sendContactMessage(payload);
+      toast({
+        title: "Message sent",
+        description: "Thanks for reaching out! I'll get back to you soon.",
       });
-      if (error) throw error;
-      toast({ title: 'Message sent', description: 'Thanks for reaching out! We will get back to you soon.' });
       form.reset();
-    } catch (err: any) {
-      toast({ title: 'Failed to send', description: err?.message || 'Please try again later.', variant: 'destructive' });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Please try again later.";
+      toast({
+        title: "Failed to send",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <section className="py-12">
-          <div className="container mx-auto px-4 max-w-5xl">
-            <div className="mb-8">
-              <h1 className={`text-4xl lg:text-5xl text-brand-primary mb-4 ${typography.title}`}>Contact Us</h1>
-              <p className="text-lg text-muted-foreground max-w-3xl">
-                {BRAND_NAME} is here to help with orders, product questions, or feedback. Reach out and we’ll get back during support hours.
+        {/* Hero */}
+        <section className="py-16 sm:py-20 lg:py-24">
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl text-center">
+            <h1
+              className={`text-4xl lg:text-5xl text-brand-primary mb-6 leading-tight ${typography.title}`}
+            >
+              Let&apos;s Connect
+            </h1>
+            <div className="space-y-4 text-muted-foreground font-sans leading-relaxed text-base sm:text-lg">
+              <p>
+                Whether you&apos;re interested in a ceramic piece, joining a
+                workshop, collaborating on a project, or simply saying hello,
+                I&apos;d love to hear from you.
               </p>
-              <p className="text-lg text-muted-foreground max-w-4xl mt-4">
-                Looking for bulk orders for cafes, restaurants, or corporate gifting? We’d love to collaborate. 
-                Write to us using the form below or email us at <span className="font-medium">grumpyngoofy@gmail.com</span>. 
-                You can also connect with us on Instagram <span className="font-medium">@grumpyngoofy</span> for quick queries and updates.
+              <p>
+                Goofy n Grumpy is built around creativity, curiosity, and
+                community — and every conversation starts with a simple
+                message.
               </p>
             </div>
+          </div>
+        </section>
 
-            {/* Why order from us */}
-            <div className="grid sm:grid-cols-3 gap-4 mb-10">
-              <Card className="shadow-card border-0">
-                <CardContent className="p-5 flex items-start gap-3">
-                  <Leaf className="h-5 w-5 text-brand-secondary" />
+        {/* Quick contact */}
+        <section className="pb-14 sm:pb-16 border-b border-border/50">
+          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10">
+              {QUICK_CONTACT.map(({ label, icon: Icon, content }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center sm:items-start text-center sm:text-left gap-3"
+                >
+                  <Icon
+                    className="h-5 w-5 text-brand-secondary shrink-0"
+                    strokeWidth={1.5}
+                  />
                   <div>
-                    <div className="font-semibold text-brand-primary">Sustainable first</div>
-                    <p className="text-sm text-muted-foreground">Eco-conscious materials and small-batch production to reduce waste.</p>
+                    <p
+                      className={`text-sm text-brand-primary mb-1 ${typography.heading}`}
+                    >
+                      {label}
+                    </p>
+                    {content}
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card border-0">
-                <CardContent className="p-5 flex items-start gap-3">
-                  <HandHeart className="h-5 w-5 text-brand-secondary" />
-                  <div>
-                    <div className="font-semibold text-brand-primary">Thoughtful & handcrafted</div>
-                    <p className="text-sm text-muted-foreground">Each piece is hand-thrown and finished—made to be used and loved.</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card border-0">
-                <CardContent className="p-5 flex items-start gap-3">
-                  <ShieldCheck className="h-5 w-5 text-brand-secondary" />
-                  <div>
-                    <div className="font-semibold text-brand-primary">Reliable for bulk</div>
-                    <p className="text-sm text-muted-foreground">Clear timelines and careful packing for cafes, restaurants, and gifting.</p>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
             </div>
+          </div>
+        </section>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Support Details */}
-              <Card className="shadow-card border-0">
-                <CardHeader>
-                  <CardTitle className="text-brand-primary">Customer Support</CardTitle>
-                  <CardDescription>Monday to Friday, 10:00 am – 6:00 pm (IST)</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                  <div>
-                    <div className="font-semibold">Address</div>
-                    <div className="text-muted-foreground">Lower Parel, Mumbai, Maharashtra 400013</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold">Phone</div>
-                    <div className="text-muted-foreground">+91-93 72 65 73 21</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold">Email</div>
-                    <div className="text-muted-foreground">grumpyngoofy@gmail.com</div>
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Response times may vary with volume, but we aim to reply promptly. You can also DM us on Instagram @grumpyngoofy.
+        {/* Map & directions */}
+        <section className="pb-14 sm:pb-16 border-b border-border/50">
+          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+            <div className="text-center mb-8">
+              <h2 className={`text-2xl text-brand-primary mb-2 ${typography.title}`}>
+                Visit the studio
+              </h2>
+              <p className="text-sm text-muted-foreground font-sans max-w-xl mx-auto">
+                {STUDIO_ADDRESS}
+              </p>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-border/60 shadow-card aspect-[16/10] sm:aspect-[21/9] bg-muted/30">
+              <iframe
+                title="Goofy n Grumpy studio location on Google Maps"
+                src={GOOGLE_MAPS_EMBED_URL}
+                className="w-full h-full min-h-[240px] border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mt-6">
+              <Button variant="quirky" size="lg" asChild>
+                <a
+                  href={GOOGLE_MAPS_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  Get directions
+                </a>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <a
+                  href={GOOGLE_MAPS_PROFILE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View on Google Maps
+                </a>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Form + details */}
+        <section className="py-16 sm:py-20 lg:py-24">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-20 items-start">
+              {/* Left */}
+              <div className="space-y-8">
+                <div>
+                  <h2
+                    className={`text-2xl lg:text-3xl text-brand-primary mb-4 ${typography.title}`}
+                  >
+                    Get in Touch
+                  </h2>
+                  <p className="text-muted-foreground font-sans leading-relaxed">
+                    Questions about ceramics, workshops, templates, custom orders,
+                    or collaborations? Send a message and I&apos;ll get back to you
+                    as soon as possible.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Contact Form */}
-              <Card className="shadow-card border-0">
-                <CardHeader>
-                  <CardTitle className="text-brand-primary">Contact form</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form className="space-y-4" onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="Your name" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
-                        <Input id="email" name="email" type="email" placeholder="you@example.com" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone number</Label>
-                        <Input id="phone" name="phone" placeholder="+91-" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="comment">Comment</Label>
-                        <Textarea id="comment" name="comment" placeholder="How can we help?" rows={5} />
+                <ul className="space-y-5">
+                  <li className="flex items-start gap-3">
+                    <Mail className="h-4 w-4 mt-0.5 text-brand-secondary shrink-0" strokeWidth={1.5} />
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-brand-primary/70 font-sans mb-0.5">
+                        Email
+                      </p>
+                      <a
+                        href={`mailto:${CONTACT_EMAIL}`}
+                        className="text-sm text-muted-foreground hover:text-brand-secondary transition-colors"
+                      >
+                        {CONTACT_EMAIL}
+                      </a>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Instagram className="h-4 w-4 mt-0.5 text-brand-secondary shrink-0" strokeWidth={1.5} />
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-brand-primary/70 font-sans mb-0.5">
+                        Instagram
+                      </p>
+                      <a
+                        href={INSTAGRAM_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground hover:text-brand-secondary transition-colors"
+                      >
+                        {INSTAGRAM_HANDLE}
+                      </a>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <MapPin className="h-4 w-4 mt-0.5 text-brand-secondary shrink-0" strokeWidth={1.5} />
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-brand-primary/70 font-sans mb-0.5">
+                        Studio
+                      </p>
+                      <address className="text-sm text-muted-foreground not-italic leading-relaxed">
+                        {STUDIO_ADDRESS}
+                      </address>
+                      <div className="mt-2 flex flex-col gap-1">
+                        <a
+                          href={GOOGLE_MAPS_DIRECTIONS_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-brand-secondary hover:underline"
+                        >
+                          Get directions
+                        </a>
+                        <a
+                          href={GOOGLE_MAPS_PROFILE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-brand-secondary hover:underline"
+                        >
+                          Google Maps profile
+                        </a>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full">Send</Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Subscribe */}
-            <Card className="shadow-card border-0 mt-8">
-              <CardHeader>
-                <CardTitle className="text-brand-primary">Subscribe to our emails</CardTitle>
-                <CardDescription>Join our email list for exclusive offers and the latest news.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="flex flex-col sm:flex-row gap-3">
-                  <Input type="email" placeholder="Email" className="flex-1" />
-                  <Button type="submit" variant="accent">Subscribe</Button>
+              {/* Right — form */}
+              <div
+                id="contact-form"
+                className="scroll-mt-28 rounded-xl border border-border/60 bg-background p-6 sm:p-8 lg:p-10"
+              >
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="Your name"
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      required
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      placeholder="What's this about?"
+                      defaultValue={prefill.subject ?? ""}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      placeholder="Tell me a little about what you're looking for..."
+                      defaultValue={prefill.message ?? ""}
+                      rows={6}
+                      className="bg-background resize-none"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="quirky"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    disabled={isSending}
+                  >
+                    {isSending ? "Sending..." : "Send Message"}
+                  </Button>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Wholesale */}
+        <section className="pb-20 sm:pb-24 lg:pb-28">
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl text-center">
+            <h2
+              className={`text-2xl lg:text-3xl text-brand-primary mb-4 ${typography.title}`}
+            >
+              Wholesale &amp; Collaborations
+            </h2>
+            <div className="space-y-4 text-muted-foreground font-sans leading-relaxed mb-8">
+              <p>
+                Looking for custom ceramics, workshop partnerships, studio
+                collaborations, café projects, gifting, or creative events?
+              </p>
+              <p>I&apos;d love to explore ideas together.</p>
+            </div>
+            <Button variant="outline" size="lg" onClick={scrollToForm}>
+              Start a Conversation
+            </Button>
           </div>
         </section>
       </main>
@@ -164,5 +378,3 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
-
-

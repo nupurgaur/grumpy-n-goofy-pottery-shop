@@ -13,8 +13,11 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { getProductImages } from "@/lib/productImages";
 import { typography } from "@/config/typography";
 import { ProductCatalogLabels } from "@/components/ProductCatalogLabels";
+import { TemplateProductDetails } from "@/components/TemplateProductDetails";
+import { isTemplateProduct, TEMPLATE_TAGLINE } from "@/config/templates";
 import {
   ArrowLeft,
+  FileDown,
   Heart,
   Minus,
   Package,
@@ -69,7 +72,8 @@ const ProductDetailPage = () => {
   }
 
   const images = getProductImages(product);
-  const isOutOfStock = product.stock_quantity === 0;
+  const isTemplate = isTemplateProduct(product);
+  const isOutOfStock = !isTemplate && product.stock_quantity === 0;
   const inWishlist = isInWishlist(product.id);
 
   const handleAddToCart = () => {
@@ -79,14 +83,15 @@ const ProductDetailPage = () => {
         name: product.name,
         price: product.price,
         image: images[0],
+        isTemplate,
       },
-      quantity,
+      isTemplate ? undefined : product.stock_quantity,
     );
   };
 
   const handleQuantityChange = (change: number) => {
     const next = quantity + change;
-    if (next >= 1 && next <= product.stock_quantity) {
+    if (next >= 1 && (isTemplate || next <= product.stock_quantity)) {
       setQuantity(next);
     }
   };
@@ -98,7 +103,7 @@ const ProductDetailPage = () => {
         <Button
           variant="ghost"
           className="mb-6 text-brand-secondary hover:text-brand-primary px-0"
-          onClick={() => navigate(-1)}
+          onClick={() => (isTemplate ? navigate("/templates") : navigate(-1))}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -145,10 +150,14 @@ const ProductDetailPage = () => {
 
               <ProductCatalogLabels productName={product.name} />
 
-              {product.description && (
-                <p className="text-muted-foreground leading-relaxed">
-                  {product.description}
-                </p>
+              {isTemplate ? (
+                <p className="text-muted-foreground leading-relaxed">{TEMPLATE_TAGLINE}</p>
+              ) : (
+                product.description && (
+                  <p className="text-muted-foreground leading-relaxed">
+                    {product.description}
+                  </p>
+                )
               )}
 
               <div className="flex flex-wrap items-center gap-3">
@@ -162,27 +171,35 @@ const ProductDetailPage = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-sm">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span
-                  className={
-                    isOutOfStock
-                      ? "text-destructive font-medium"
+              {isTemplate ? (
+                <div className="flex items-center gap-2 text-sm text-brand-secondary">
+                  <FileDown className="h-4 w-4 shrink-0" />
+                  <span className="font-medium">Instant PDF download — delivered by email</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <span
+                    className={
+                      isOutOfStock
+                        ? "text-destructive font-medium"
+                        : product.stock_quantity <= product.low_stock_threshold
+                          ? "text-yellow-600"
+                          : "text-green-600"
+                    }
+                  >
+                    {isOutOfStock
+                      ? "Out of stock"
                       : product.stock_quantity <= product.low_stock_threshold
-                        ? "text-yellow-600"
-                        : "text-green-600"
-                  }
-                >
-                  {isOutOfStock
-                    ? "Out of stock"
-                    : product.stock_quantity <= product.low_stock_threshold
-                      ? `Low stock — ${product.stock_quantity} left`
-                      : `${product.stock_quantity} in stock`}
-                </span>
-              </div>
+                        ? `Low stock — ${product.stock_quantity} left`
+                        : `${product.stock_quantity} in stock`}
+                  </span>
+                </div>
+              )}
 
               <Separator />
 
+              {!isTemplate && (
               <div className="flex items-center gap-4">
                 <span className="font-medium">Quantity</span>
                 <div className="flex items-center gap-2">
@@ -205,6 +222,7 @@ const ProductDetailPage = () => {
                   </Button>
                 </div>
               </div>
+              )}
 
               <div className="flex gap-3">
                 <Button
@@ -215,7 +233,7 @@ const ProductDetailPage = () => {
                   disabled={isOutOfStock}
                 >
                   <ShoppingCart className="h-5 w-5 mr-2" />
-                  {isOutOfStock ? "Out of stock" : "Add to cart"}
+                  {isOutOfStock ? "Out of stock" : isTemplate ? "Buy template" : "Add to cart"}
                 </Button>
                 <Button
                   variant="outline"
@@ -229,11 +247,18 @@ const ProductDetailPage = () => {
                 </Button>
               </div>
 
-              <ProductDetailsAccordion product={product} />
+              {isTemplate ? (
+                <TemplateProductDetails product={product} />
+              ) : (
+                <ProductDetailsAccordion product={product} />
+              )}
             </div>
           </div>
 
-          <RelatedProductsSlider products={relatedProducts} />
+          <RelatedProductsSlider
+            products={relatedProducts}
+            title={isTemplate ? "More templates" : undefined}
+          />
         </div>
       </main>
       <Footer />

@@ -15,7 +15,21 @@ import vaseImage from "@/assets/IMG20250927152145.jpg";
 import bowlImage from "@/assets/IMG20250927153430 (1).jpg";
 import heroImage from "@/assets/IMG_20250929_021501 (2).jpg";
 import { typography } from "@/config/typography";
+import { getShopCategoryMeta } from "@/config/shopCategories";
+import { isTemplateProduct } from "@/config/templates";
 import { ProductCatalogLabels } from "@/components/ProductCatalogLabels";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { homeSectionClasses, type HomeSectionTone } from "@/config/homeSections";
+
+type FeaturedProductsProps = {
+  sectionTone?: HomeSectionTone;
+};
 
 // Consistent fallback images for all products
 const getProductImages = (product: any) => {
@@ -43,14 +57,18 @@ const getProductImage = (imageUrl: string) => {
   return imageUrl;
 };
 
-const FeaturedProducts = () => {
+const FeaturedProducts = ({ sectionTone }: FeaturedProductsProps) => {
   const { addItem } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const hasCategoryParam = location.search.includes('category=');
   const category = params.get('category') || 'all';
-  const isHomeFeatured = !hasCategoryParam; // true homepage: no category filter present
+  const isHomeFeatured = !hasCategoryParam;
+  const sectionClass =
+    isHomeFeatured && sectionTone
+      ? homeSectionClasses(sectionTone, "scroll-mt-28")
+      : "py-20 bg-muted/30";
   const { products, loading, getStockStatus, isLowStock } = useProducts(category);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -80,7 +98,10 @@ const FeaturedProducts = () => {
   const showFilters = !isHomeFeatured; // show filters on any category page, including 'all'
 
   const filteredAndSortedProducts = useMemo(() => {
-    let list = products;
+    let list = products.filter((p) => !isTemplateProduct(p));
+    if (isHomeFeatured) {
+      list = list.filter((p) => p.stock_quantity > 0);
+    }
     if (showFilters) {
       // Category filter applies only on All Products page (data already scoped on category pages)
       if (category === 'all' && categoryFilter !== 'all') {
@@ -114,9 +135,10 @@ const FeaturedProducts = () => {
       }
     }
     return list;
-  }, [products, showFilters, categoryFilter, pricePreset, sortOrder]);
+  }, [products, showFilters, categoryFilter, pricePreset, sortOrder, isHomeFeatured]);
 
   const productCount = filteredAndSortedProducts.length;
+  const categoryMeta = category !== "all" ? getShopCategoryMeta(category) : null;
   
 
   const handleAddToCart = (product: any) => {
@@ -168,19 +190,130 @@ const FeaturedProducts = () => {
     }
   };
 
+  const renderProductCard = (product: (typeof products)[0]) => {
+    const stockStatus = getStockStatus(product);
+    const isOutOfStock = stockStatus === 'out-of-stock';
+
+    return (
+      <Card
+        key={product.id}
+        className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer h-full"
+        onClick={() => handleProductClick(product)}
+      >
+        <div className="relative overflow-hidden aspect-square">
+          {isHomeFeatured || category === 'all' ? (
+            <ProductImageCarousel
+              images={getProductImages(product)}
+              alt={product.name}
+              className={`w-full h-full ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
+              showArrows={true}
+              showDots={true}
+            />
+          ) : (
+            <img
+              src={getProductImage(product.image_url)}
+              alt={product.name}
+              className={`w-full h-full object-cover ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
+            />
+          )}
+          {getStockBadge(product)}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleWishlistToggle(product);
+            }}
+          >
+            <Heart className={`h-4 w-4 ${
+              isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''
+            }`} />
+          </Button>
+        </div>
+
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className={`text-xl text-brand-primary ${typography.heading}`}>
+                {product.name}
+              </h3>
+              <ProductCatalogLabels productName={product.name} compact />
+            </div>
+
+            {!isHomeFeatured && (
+              <div className="flex items-center space-x-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span className={`text-sm ${
+                  isOutOfStock ? 'text-destructive' :
+                  isLowStock(product) ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {isOutOfStock
+                    ? 'Out of Stock'
+                    : isLowStock(product)
+                      ? `Low Stock (${product.stock_quantity} left)`
+                      : `${product.stock_quantity} in stock`}
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className={`text-2xl text-brand-primary ${typography.heading}`}>
+                  ₹{product.price}
+                </span>
+                {product.original_price && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    ₹{product.original_price}
+                  </span>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleProductClick(product);
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View
+                </Button>
+                <Button
+                  variant="accent"
+                  size="sm"
+                  className="group"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
+                  disabled={isOutOfStock}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                  {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (loading) {
     return (
-      <section
-        id="shop"
-        className="py-20 bg-muted/30"
-      >
-        <div className="container mx-auto px-4">
+      <section id="shop" className={sectionClass}>
+        <div className="container mx-auto px-4 w-full">
           <div className="text-center mb-16">
             <h2 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
               Curated picks
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Loading our amazing pottery collection...
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-sans">
+              {isHomeFeatured
+                ? "Find the piece that feels a little like you."
+                : "Loading our amazing pottery collection..."}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -202,24 +335,32 @@ const FeaturedProducts = () => {
     );
   }
   return (
-    <section
-      id="shop"
-      className="py-20 bg-muted/30"
-    >
-      <div className="container mx-auto px-4">
+    <section id="shop" className={sectionClass}>
+      <div className="container mx-auto px-4 w-full">
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
             {isHomeFeatured
-              ? 'Curated picks'
-              : category === 'all'
-                ? 'All Products'
-                : `${category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`}
+              ? "Curated picks"
+              : category === "all"
+                ? "All Products"
+                : categoryMeta?.label ??
+                  category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </h2>
-          {category === 'all' && (
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Each piece tells a story - quirky, functional, and made with love
+          {isHomeFeatured ? (
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-sans leading-relaxed">
+              Find the piece that feels a little like you.
             </p>
+          ) : categoryMeta ? (
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-sans leading-relaxed">
+              {categoryMeta.tagline}
+            </p>
+          ) : (
+            category === "all" && (
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Each piece tells a story - quirky, functional, and made with love
+              </p>
+            )
           )}
         </div>
 
@@ -295,116 +436,33 @@ const FeaturedProducts = () => {
               </CardContent>
             </Card>
           </div>
+        ) : isHomeFeatured ? (
+        <div className="relative px-10 mb-12">
+          <Carousel
+            opts={{ align: "start", loop: filteredAndSortedProducts.length > 3 }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {filteredAndSortedProducts.map((product) => (
+                <CarouselItem
+                  key={product.id}
+                  className="basis-full sm:basis-1/2 lg:basis-1/3"
+                >
+                  {renderProductCard(product)}
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {filteredAndSortedProducts.length > 1 && (
+              <>
+                <CarouselPrevious className="-left-2 md:-left-4" />
+                <CarouselNext className="-right-2 md:-right-4" />
+              </>
+            )}
+          </Carousel>
+        </div>
         ) : (
-        /* Products Grid */
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {filteredAndSortedProducts.map((product) => {
-            const stockStatus = getStockStatus(product);
-            const isOutOfStock = stockStatus === 'out-of-stock';
-            
-            return (
-              <Card key={product.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
-                <div className="relative overflow-hidden aspect-square">
-                  {isHomeFeatured || category === 'all' ? (
-                    <ProductImageCarousel
-                      images={getProductImages(product)}
-                      alt={product.name}
-                      className={`w-full h-full ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
-                      showArrows={true}
-                      showDots={true}
-                    />
-                  ) : (
-                    <img
-                      src={getProductImage(product.image_url)}
-                      alt={product.name}
-                      className={`w-full h-full object-cover ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
-                    />
-                  )}
-                  {getStockBadge(product)}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleWishlistToggle(product);
-                    }}
-                  >
-                    <Heart className={`h-4 w-4 ${
-                      isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''
-                    }`} />
-                  </Button>
-                </div>
-                
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Product Info */}
-                    <div className="space-y-2">
-                      <h3 className={`text-xl text-brand-primary ${typography.heading}`}>
-                        {product.name}
-                      </h3>
-                      <ProductCatalogLabels productName={product.name} compact />
-                    </div>
-
-                    {/* Stock Status */}
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className={`text-sm ${
-                        isOutOfStock ? 'text-destructive' : 
-                        isLowStock(product) ? 'text-yellow-600' : 
-                        'text-green-600'
-                      }`}>
-                        {isOutOfStock ? 'Out of Stock' : 
-                         isLowStock(product) ? `Low Stock (${product.stock_quantity} left)` : 
-                         `${product.stock_quantity} in stock`}
-                      </span>
-                    </div>
-
-                    {/* Price and Actions */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className={`text-2xl text-brand-primary ${typography.heading}`}>
-                          ₹{product.price}
-                        </span>
-                        {product.original_price && (
-                          <span className="text-sm text-muted-foreground line-through">
-                            ₹{product.original_price}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductClick(product);
-                          }}
-                          className="flex-1"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                        <Button 
-                          variant="accent" 
-                          size="sm" 
-                          className="group"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart(product);
-                          }}
-                          disabled={isOutOfStock}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {filteredAndSortedProducts.map((product) => renderProductCard(product))}
         </div>
         )}
 
@@ -413,7 +471,7 @@ const FeaturedProducts = () => {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate('/#shop')}
+            onClick={() => navigate('/?category=all#shop')}
           >
             View All Products
           </Button>

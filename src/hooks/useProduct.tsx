@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/hooks/useProducts";
+import { isWorkshopProduct } from "@/config/workshops";
 
 export const useProduct = (productId?: string) => {
   const [product, setProduct] = useState<Product | null>(null);
@@ -35,7 +36,7 @@ export const useProduct = (productId?: string) => {
           .maybeSingle();
 
         if (fetchError) throw fetchError;
-        if (!data) {
+        if (!data || isWorkshopProduct(data)) {
           setProduct(null);
           setRelatedProducts([]);
           setError("Product not found");
@@ -44,14 +45,22 @@ export const useProduct = (productId?: string) => {
 
         setProduct(data as Product);
 
-        const { data: related, error: relatedError } = await supabase
+        const isTemplate = data.is_template === true;
+        let relatedQuery = supabase
           .from("products")
           .select("*")
           .eq("is_active", true)
-          .eq("category", data.category)
+          .eq("is_template", isTemplate)
+          .eq("is_workshop", false)
           .neq("id", id)
           .order("created_at", { ascending: true })
           .limit(12);
+
+        if (!isTemplate) {
+          relatedQuery = relatedQuery.eq("category", data.category);
+        }
+
+        const { data: related, error: relatedError } = await relatedQuery;
 
         if (relatedError) throw relatedError;
         setRelatedProducts((related as Product[]) || []);

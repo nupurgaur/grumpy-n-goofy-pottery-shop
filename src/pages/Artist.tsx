@@ -1,71 +1,121 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Facebook, Twitter, Camera, Sparkles } from "lucide-react";
-import { BRAND_NAME } from "@/config/brand";
-import { BrandLogo } from "@/components/BrandLogo";
+import { Instagram, Facebook, Twitter } from "lucide-react";
 import { typography } from "@/config/typography";
+import {
+  FOUNDER_NAME,
+  FOUNDER_PHOTO,
+  FOUNDER_PHOTO_ALT,
+} from "@/config/founder";
+import { Link } from "react-router-dom";
+import { INSTAGRAM_URL } from "@/config/social";
 
 const ArtistPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-start">
-              <div className="space-y-6">
-                <h1 className={`text-3xl lg:text-4xl text-brand-primary ${typography.title}`}>Meet the Artist</h1>
-                <p className="text-muted-foreground text-lg">
-                  Hi, I’m the hands behind {BRAND_NAME}. Every mug, bowl, and vase
-                  is hand-thrown in small batches, designed to bring a little joy to your
-                  everyday rituals. Expect quirky shapes, cozy glazes, and one-of-a-kind
-                  personality in each piece.
-                </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Card className="shadow-card">
-                    <CardContent className="p-5 flex items-start gap-3">
-                      <Sparkles className="h-5 w-5 text-brand-secondary" />
-                      <div>
-                        <h3 className={`text-brand-primary ${typography.heading}`}>Small-Batch Craft</h3>
-                        <p className="text-sm text-muted-foreground">Limited runs with intentional imperfections.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-card">
-                    <CardContent className="p-5 flex items-start gap-3">
-                      <Camera className="h-5 w-5 text-brand-secondary" />
-                      <div>
-                        <h3 className={`text-brand-primary ${typography.heading}`}>Studio Stories</h3>
-                        <p className="text-sm text-muted-foreground">Follow along for process, drops, and restocks.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="accent" onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}>
-                    Get in Touch
+        <section className="py-16 sm:py-20">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 xl:gap-16 items-start">
+              {/* Story content — left */}
+              <div className="lg:col-span-7 xl:col-span-8 min-w-0">
+            <h1
+              className={`text-3xl lg:text-4xl text-brand-primary mb-8 leading-tight ${typography.title}`}
+            >
+              My Journey to Clay
+            </h1>
+
+            <div className="space-y-4 text-muted-foreground font-sans leading-relaxed max-w-none">
+              <p className="text-foreground/90">Hi, I&apos;m {FOUNDER_NAME}.</p>
+
+              <p>
+                I&apos;m originally from Gorakhpur, and like many small-town girls with
+                big dreams, I moved to Delhi in 2014 for higher studies. Over the
+                years, Delhi became much more than a city where I studied and
+                worked&mdash;it became my second home. I built my career there, spent
+                four years working, and got married in 2021.
+              </p>
+
+              <p>
+                In 2022, I moved to Mumbai for work as a software engineer. Like many
+                people in tech, my days revolved around screens, meetings, and
+                deadlines. I enjoyed my work, but I was searching for something that
+                felt more hands-on and creative.
+              </p>
+
+              <p>
+                That changed in 2023 when I attended a Nerikomi pottery workshop in
+                Mumbai. What started as a simple workshop quickly turned into a passion.
+                I went on to learn wheel throwing, handbuilding, glaze chemistry, and clay
+                bodies through courses, workshops, and countless hours of practice.
+              </p>
+
+              <p>
+                Most of that practice happened after work. While others relaxed with
+                Netflix, I spent my evenings making pottery from a small home studio
+                setup, firing pieces through rental kilns, and learning one experiment at
+                a time.
+              </p>
+
+              <p>
+                What surprised me most was realizing that pottery isn&apos;t just for
+                artists. You don&apos;t need a creative background to enjoy working with
+                clay&mdash;you just need curiosity and the willingness to begin.
+              </p>
+
+              <p>
+                Today, as I prepare to open my studio in Delhi NCR and transition into
+                pottery full-time, I feel like I&apos;ve found my ikigai.
+              </p>
+
+              <p>
+                Pottery grounds me. It helps me slow down, disconnect from screens, and
+                lose myself in the joy of making. Through Goofy n Grumpy, I hope to
+                share that feeling with others through handmade ceramics, workshops,
+                templates, and a welcoming creative community.
+              </p>
+
+              <p>
+                Because if a software engineer from Gorakhpur can fall in love with clay
+                and build a life around it, maybe pottery is for more people than we
+                think.
+              </p>
+            </div>
+
+            <div className="mt-12 flex flex-wrap items-center gap-3">
+              <Button asChild variant="quirky" size="lg">
+                <Link to="/contact">Get in Touch</Link>
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button asChild variant="outline" size="icon" aria-label="Instagram">
+                  <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                </Button>
+                {[Facebook, Twitter].map((Icon, i) => (
+                  <Button key={i} variant="outline" size="icon" aria-label="Social link">
+                    <Icon className="h-4 w-4" />
                   </Button>
-                  <div className="flex items-center gap-2">
-                    {[Instagram, Facebook, Twitter].map((Icon, i) => (
-                      <Button key={i} variant="outline" size="icon">
-                        <Icon className="h-4 w-4" />
-                      </Button>
-                    ))}
-                  </div>
+                ))}
+              </div>
+            </div>
+              </div>
+
+              <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28">
+                <div className="overflow-hidden rounded-2xl border border-border/40 bg-white shadow-card">
+                  <img
+                    src={FOUNDER_PHOTO}
+                    alt={FOUNDER_PHOTO_ALT}
+                    className="w-full aspect-[3/4] object-cover object-center"
+                  />
+                  <p className="px-5 py-4 text-sm text-muted-foreground font-sans leading-relaxed border-t border-border/30">
+                    {FOUNDER_NAME} — handbuilding, wheel throwing, and studio
+                    workshops since 2023.
+                  </p>
                 </div>
-              </div>
-              <div>
-                <Card className="overflow-hidden shadow-card border-0">
-                  <div className="flex items-center justify-center p-8">
-                    <BrandLogo
-                      iconClassName="h-28 sm:h-32"
-                      titleClassName="text-4xl sm:text-5xl"
-                    />
-                  </div>
-                </Card>
-              </div>
+              </aside>
             </div>
           </div>
         </section>
@@ -76,5 +126,3 @@ const ArtistPage = () => {
 };
 
 export default ArtistPage;
-
-
