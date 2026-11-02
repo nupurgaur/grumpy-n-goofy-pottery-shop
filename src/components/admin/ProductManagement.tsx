@@ -43,8 +43,11 @@ const ProductManagement = () => {
     images: [] as string[],
     stock_quantity: '',
     low_stock_threshold: '5',
-    is_featured: false,
-    is_active: true
+    is_active: true,
+    dimensions: '',
+    weight: '',
+    care: 'Microwave safe',
+    origin: 'Handcrafted in India',
   });
 
   const resetForm = () => {
@@ -57,8 +60,11 @@ const ProductManagement = () => {
       images: [],
       stock_quantity: '',
       low_stock_threshold: '5',
-      is_featured: false,
-      is_active: true
+      is_active: true,
+      dimensions: '',
+      weight: '',
+      care: 'Microwave safe',
+      origin: 'Handcrafted in India',
     });
   };
 
@@ -76,8 +82,11 @@ const ProductManagement = () => {
         images: formData.images,
         stock_quantity: parseInt(formData.stock_quantity),
         low_stock_threshold: parseInt(formData.low_stock_threshold),
-        is_featured: formData.is_featured,
-        is_active: formData.is_active
+        is_active: formData.is_active,
+        dimensions: formData.dimensions,
+        weight: formData.weight,
+        care: formData.care,
+        origin: formData.origin,
       };
 
       let error;
@@ -123,8 +132,11 @@ const ProductManagement = () => {
       images: product.images || (product.image_url ? [product.image_url] : []),
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
-      is_featured: product.is_featured,
-      is_active: product.is_active
+      is_active: product.is_active,
+      dimensions: product.dimensions || '',
+      weight: product.weight || '',
+      care: product.care || 'Microwave safe',
+      origin: product.origin || 'Handcrafted in India',
     });
     setIsAddDialogOpen(true);
   };
@@ -236,6 +248,34 @@ const ProductManagement = () => {
                       />
                     </div>
                     
+                    <div className="space-y-2">
+                      <Label htmlFor="dimensions">Dimensions</Label>
+                      <Input
+                        id="dimensions"
+                        value={formData.dimensions}
+                        onChange={e => setFormData(prev => ({ ...prev, dimensions: e.target.value }))}
+                        placeholder={'e.g. 8" H x 6" W x 4" D'}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weight">Weight</Label>
+                      <Input
+                        id="weight"
+                        value={formData.weight}
+                        onChange={e => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                        placeholder="e.g. 530g or 1.2 lbs"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="care">Care</Label>
+                      <Input
+                        id="care"
+                        value={formData.care}
+                        onChange={e => setFormData(prev => ({ ...prev, care: e.target.value }))}
+                        placeholder="e.g. Microwave safe"
+                      />
+                    </div>
+                    
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="price">Price *</Label>
@@ -286,23 +326,13 @@ const ProductManagement = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="is_featured"
-                          checked={formData.is_featured}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
-                        />
-                        <Label htmlFor="is_featured" className="text-sm">Featured</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="is_active"
-                          checked={formData.is_active}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                        />
-                        <Label htmlFor="is_active" className="text-sm">Active</Label>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_active"
+                        checked={formData.is_active}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                      />
+                      <Label htmlFor="is_active" className="text-sm">Active</Label>
                     </div>
                   </div>
                   
@@ -356,9 +386,6 @@ const ProductManagement = () => {
                         </div>
                         <div>
                           <div className="font-medium">{product.name}</div>
-                          {product.is_featured && (
-                            <Badge variant="secondary" className="text-xs">Featured</Badge>
-                          )}
                         </div>
                       </div>
                     </TableCell>

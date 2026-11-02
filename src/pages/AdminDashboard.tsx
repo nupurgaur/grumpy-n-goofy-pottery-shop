@@ -8,6 +8,8 @@ import { Package, Plus, BarChart3, Users, ArrowLeft, ShoppingCart } from 'lucide
 import ProductManagement from '@/components/admin/ProductManagement';
 import InventoryOverview from '@/components/admin/InventoryOverview';
 import OrderManagement from '@/components/admin/OrderManagement';
+import { BRAND_NAME } from '@/config/brand';
+import { typography } from '@/config/typography';
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -40,8 +42,8 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-brand-primary">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your pottery store inventory and products</p>
+            <h1 className={`text-3xl text-brand-primary ${typography.title}`}>Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage {BRAND_NAME} inventory and products</p>
           </div>
           <Button 
             variant="outline" 

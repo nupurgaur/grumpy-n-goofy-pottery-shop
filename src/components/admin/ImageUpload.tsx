@@ -46,11 +46,11 @@ export const ImageUpload = ({ images, onChange, maxImages = 5 }: ImageUploadProp
           continue;
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (max 7MB)
+        if (file.size > 7 * 1024 * 1024) {
           toast({
             title: "File too large",
-            description: `${file.name} is larger than 5MB`,
+            description: `${file.name} is larger than 7MB`,
             variant: "destructive"
           });
           continue;
@@ -136,7 +136,7 @@ export const ImageUpload = ({ images, onChange, maxImages = 5 }: ImageUploadProp
       <div>
         <Label>Product Images (Max {maxImages})</Label>
         <p className="text-sm text-muted-foreground">
-          Upload high-quality images of your product. Supported formats: JPG, PNG, WebP. Max size: 5MB each.
+          Upload high-quality images of your product. Supported formats: JPG, PNG, WebP. Max size: 7MB each.
         </p>
       </div>
 

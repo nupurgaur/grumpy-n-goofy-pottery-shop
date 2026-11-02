@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,8 @@ interface ProductImageCarouselProps {
   autoPlay?: boolean;
   autoPlayInterval?: number;
   showCounter?: boolean;
+  currentIndex?: number;
+  onIndexChange?: (index: number) => void;
 }
 
 export const ProductImageCarousel = ({
@@ -22,26 +24,42 @@ export const ProductImageCarousel = ({
   showArrows = true,
   autoPlay = false,
   autoPlayInterval = 3000,
-  showCounter = true
+  showCounter = true,
+  currentIndex: controlledIndex,
+  onIndexChange
 }: ProductImageCarouselProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [internalIndex, setInternalIndex] = useState(0);
+  
+  // Use controlled index if provided, otherwise use internal state
+  const currentIndex = controlledIndex !== undefined ? controlledIndex : internalIndex;
+  
+  const setCurrentIndex = (index: number) => {
+    if (onIndexChange) {
+      onIndexChange(index);
+    } else {
+      setInternalIndex(index);
+    }
+  };
 
   // Auto-play functionality
-  useState(() => {
+  useEffect(() => {
     if (autoPlay && images.length > 1) {
       const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        const newIndex = (currentIndex + 1) % images.length;
+        setCurrentIndex(newIndex);
       }, autoPlayInterval);
       return () => clearInterval(interval);
     }
-  });
+  }, [autoPlay, autoPlayInterval, images.length, currentIndex]);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    const newIndex = (currentIndex - 1 + images.length) % images.length;
+    setCurrentIndex(newIndex);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    const newIndex = (currentIndex + 1) % images.length;
+    setCurrentIndex(newIndex);
   };
 
   const goToSlide = (index: number) => {

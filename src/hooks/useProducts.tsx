@@ -19,6 +19,11 @@ export interface Product {
   review_count: number;
   created_at: string;
   updated_at: string;
+  // Added admin-editable fields:
+  dimensions?: string;
+  weight?: string;
+  care?: string;
+  origin?: string;
 }
 
 export interface InventoryMovement {
@@ -52,18 +57,20 @@ export const useProducts = (category?: string) => {
       if (category && category !== 'all') {
         query = query.eq('category', category);
       }
-      
       const { data, error } = await query
-        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading products:', error);
+      const msg = error?.message || '';
+      const isNetworkError = msg === 'Failed to fetch' || msg.includes('NetworkError') || error?.name === 'TypeError';
       toast({
         title: "Error loading products",
-        description: "Failed to load product catalog",
+        description: isNetworkError
+          ? "Cannot reach Supabase. Check your internet connection and, if you use Supabase free tier, open the Supabase Dashboard and restore/unpause your project."
+          : msg || "Failed to load product catalog",
         variant: "destructive"
       });
     } finally {

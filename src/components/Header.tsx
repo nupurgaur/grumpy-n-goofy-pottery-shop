@@ -5,6 +5,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { CartIcon } from "@/components/Cart";
 import { useWishlist } from "@/hooks/useWishlist";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
+
+const headerText = "text-[#f5f3ef]";
+const headerHover = "text-[#f5f3ef] hover:text-white hover:bg-white/10";
+const navLink =
+  "text-base lg:text-lg font-medium text-[#f5f3ef]/90 hover:text-[#f5f3ef] transition-colors";
 
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -12,47 +18,52 @@ const Header = () => {
   const navigate = useNavigate();
 
   const categories = [
-    { value: 'all', label: 'All Products', href: '#shop' },
-    { value: 'mugs', label: 'Mugs', href: '#shop?category=mugs' },
-    { value: 'bowls', label: 'Bowls', href: '#shop?category=bowls' },
-    { value: 'plates', label: 'Plates', href: '#shop?category=plates' },
-    { value: 'ceramic-clocks', label: 'Ceramic Clocks', href: '#shop?category=ceramic-clocks' },
-    { value: 'lamps', label: 'Lamps', href: '#shop?category=lamps' },
-    { value: 'spoon-rests', label: 'Spoon Rests', href: '#shop?category=spoon-rests' },
-    { value: 'vases', label: 'Vases', href: '#shop?category=vases' },
+    { value: 'all', label: 'All Products' },
+    { value: 'mugs', label: 'Mugs' },
+    { value: 'bowls', label: 'Bowls' },
+    { value: 'plates', label: 'Plates' },
+    { value: 'ceramic-clocks', label: 'Ceramic Clocks' },
+    { value: 'lamps', label: 'Lamps' },
+    { value: 'spoon-rests', label: 'Spoon Rests' },
+    { value: 'vases', label: 'Vases' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <header
+      className={`sticky top-0 z-50 w-full ${headerText} border-b border-[#f5f3ef]/15`}
+      style={{ backgroundColor: BRAND_NAVY }}
+    >
+      <div className="container mx-auto px-4 h-24 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/lovable-uploads/5a8d33c9-9b0f-47f7-8ff5-f04b4eb1ceb5.png" 
-            alt="Grumpy 'n' Goofy Logo" 
-            className="h-12 w-12"
+        <Link
+          to="/"
+          className="flex items-center min-w-0 max-w-[min(100%,14rem)] sm:max-w-[18rem] hover:opacity-90 transition-opacity"
+        >
+          <img
+            src={BRAND_LOGO_FOOTER}
+            alt={`${BRAND_NAME} logo`}
+            className="h-16 sm:h-20 lg:h-24 w-auto max-w-full object-contain object-left"
           />
-          <div>
-            <h1 className="text-xl font-bold text-brand-primary">Grumpy 'n' Goofy</h1>
-            <p className="text-xs text-muted-foreground">Sip your story</p>
-          </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/" className={navLink}>
             Home
           </Link>
           
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-brand-secondary transition-colors">
+            <DropdownMenuTrigger className={`flex items-center space-x-1 ${navLink}`}>
               <span>Shop</span>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-5 w-5 shrink-0" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               {categories.map((category) => (
                 <DropdownMenuItem key={category.value} asChild>
-                  <Link to="/" className="cursor-pointer">
+                  <Link
+                    to={`/?category=${encodeURIComponent(category.value)}#shop`}
+                    className="cursor-pointer"
+                  >
                     {category.label}
                   </Link>
                 </DropdownMenuItem>
@@ -60,17 +71,17 @@ const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Link to="/#about" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/#about" className={navLink}>
             About
           </Link>
-          <Link to="/#contact" className="text-foreground hover:text-brand-secondary transition-colors">
+          <Link to="/contact" className={navLink}>
             Contact
           </Link>
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center space-x-4">
-          <CartIcon />
+        <div className={`flex items-center space-x-4 ${headerText}`}>
+          <CartIcon buttonClassName={headerHover} />
           
           {/* Orders Button */}
           {user && (
@@ -78,7 +89,7 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate('/orders')}
-              className="relative"
+              className={`relative ${headerHover}`}
             >
               <Package className="h-5 w-5" />
             </Button>
@@ -89,7 +100,7 @@ const Header = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate('/wishlist')}
-            className="relative"
+            className={`relative ${headerHover}`}
           >
             <Heart className="h-5 w-5" />
             {wishlist.length > 0 && (
@@ -107,7 +118,7 @@ const Header = () => {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/admin')}
-                  className="hidden sm:flex items-center gap-1"
+                  className={`hidden sm:flex items-center gap-1 ${headerHover}`}
                 >
                   <Settings className="h-4 w-4" />
                   <span>Admin</span>
@@ -116,7 +127,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 onClick={signOut}
-                className="hidden sm:flex items-center space-x-2"
+                className={`hidden sm:flex items-center space-x-2 ${headerHover}`}
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
@@ -126,14 +137,14 @@ const Header = () => {
             <Button 
               variant="ghost" 
               onClick={() => navigate('/auth')}
-              className="hidden sm:flex items-center space-x-2"
+              className={`hidden sm:flex items-center space-x-2 ${headerHover}`}
             >
               <User className="h-4 w-4" />
               <span>Sign In</span>
             </Button>
           )}
           
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button variant="ghost" size="icon" className={`md:hidden ${headerHover}`}>
             <Menu className="h-5 w-5" />
           </Button>
         </div>

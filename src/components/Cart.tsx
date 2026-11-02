@@ -4,15 +4,20 @@ import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
-export const CartIcon = () => {
+type CartIconProps = {
+  buttonClassName?: string;
+};
+
+export const CartIcon = ({ buttonClassName }: CartIconProps) => {
   const { itemCount } = useCart();
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className={cn("relative", buttonClassName)}>
           <ShoppingCart className="h-5 w-5" />
           {itemCount > 0 && (
             <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs flex items-center justify-center">

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Tables } from '@/integrations/supabase/types';
+import { typography } from '@/config/typography';
 
 type Order = Tables<'orders'> & {
   order_items: Tables<'order_items'>[];
@@ -180,7 +181,7 @@ const ReturnRequestPage = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-2xl font-bold text-brand-primary mb-4">Order Not Found</h1>
+            <h1 className={`text-2xl text-brand-primary mb-4 ${typography.title}`}>Order Not Found</h1>
             <p className="text-muted-foreground mb-4">The order you're looking for doesn't exist.</p>
             <Button onClick={() => navigate('/orders')}>
               Back to Orders
@@ -201,7 +202,7 @@ const ReturnRequestPage = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Order
               </Button>
-              <h1 className="text-3xl font-bold text-brand-primary">Return Request</h1>
+              <h1 className={`text-3xl text-brand-primary ${typography.title}`}>Return Request</h1>
             </div>
 
             <Card>
@@ -276,7 +277,7 @@ const ReturnRequestPage = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Order
             </Button>
-            <h1 className="text-3xl font-bold text-brand-primary">Request Return</h1>
+            <h1 className={`text-3xl text-brand-primary ${typography.title}`}>Request Return</h1>
           </div>
 
           {/* Order Summary */}

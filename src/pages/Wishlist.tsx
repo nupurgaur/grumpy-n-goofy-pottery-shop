@@ -10,6 +10,7 @@ import { Product } from "@/hooks/useProducts";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { ProductDetailDialog } from "@/components/ProductDetailDialog";
 import { useState } from "react";
+import { typography } from "@/config/typography";
 
 // Fallback images for products
 const getProductImage = (imageUrl: string) => {
@@ -60,7 +61,7 @@ const Wishlist = () => {
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">Sign in to view your wishlist</h2>
+            <h2 className={`text-2xl mb-4 ${typography.heading}`}>Sign in to view your wishlist</h2>
             <p className="text-muted-foreground mb-6">
               Please sign in to access your saved items
             </p>
@@ -78,7 +79,7 @@ const Wishlist = () => {
       <div className="min-h-screen bg-background py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h1 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">
+            <h1 className={`text-3xl lg:text-4xl text-brand-primary mb-4 ${typography.sectionHeader}`}>
               My Wishlist
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -119,7 +120,7 @@ const Wishlist = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-brand-primary mb-2">
+              <h1 className={`text-3xl lg:text-4xl text-brand-primary mb-2 ${typography.sectionHeader}`}>
                 My Wishlist
               </h1>
               <p className="text-xl text-muted-foreground">
@@ -142,7 +143,7 @@ const Wishlist = () => {
         {wishlist.length === 0 ? (
           <div className="text-center py-20">
             <Heart className="h-24 w-24 mx-auto mb-6 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">Your wishlist is empty</h2>
+            <h2 className={`text-2xl mb-4 ${typography.heading}`}>Your wishlist is empty</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Start adding items you love to your wishlist by clicking the heart icon on any product
             </p>
@@ -161,46 +162,18 @@ const Wishlist = () => {
 
               return (
                 <Card key={item.id} className="group hover-lift border-0 shadow-card bg-card-gradient overflow-hidden cursor-pointer" onClick={() => handleProductClick(product)}>
-                  <div className="relative overflow-hidden">
+                  <div className="relative h-64 w-full overflow-hidden bg-muted flex items-center justify-center">
                     <ProductImageCarousel
                       images={product.images && product.images.length > 0 
                         ? product.images.map(img => getProductImage(img))
                         : [getProductImage(product.image_url)]
                       }
                       alt={product.name}
-                      className={isOutOfStock ? 'opacity-60 grayscale' : ''}
+                      className={`h-64 w-full object-cover ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                       showArrows={true}
                       showDots={true}
                     />
-                    {product.is_featured && (
-                      <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
-                        Featured
-                      </Badge>
-                    )}
-                    {isOutOfStock && (
-                      <Badge variant="destructive" className="absolute top-4 right-14">
-                        <Package className="h-3 w-3 mr-1" />
-                        Out of Stock
-                      </Badge>
-                    )}
-                    {isLowStock && !isOutOfStock && (
-                      <Badge variant="secondary" className="absolute top-4 right-14 bg-yellow-500 text-yellow-50">
-                        Low Stock ({product.stock_quantity})
-                      </Badge>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveFromWishlist(product.id);
-                      }}
-                    >
-                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                    </Button>
                   </div>
-                  
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       {/* Rating */}
@@ -221,17 +194,15 @@ const Wishlist = () => {
                           {product.rating} ({product.review_count})
                         </span>
                       </div>
-
                       {/* Product Info */}
                       <div>
-                        <h3 className="text-xl font-semibold text-brand-primary mb-2">
+                        <h3 className={`text-xl text-brand-primary mb-2 ${typography.heading}`}>
                           {product.name}
                         </h3>
                         <p className="text-muted-foreground text-sm mb-4">
                           {product.description}
                         </p>
                       </div>
-
                       {/* Stock Status */}
                       <div className="flex items-center space-x-2">
                         <Package className="h-4 w-4 text-muted-foreground" />
@@ -245,11 +216,10 @@ const Wishlist = () => {
                            `${product.stock_quantity} in stock`}
                         </span>
                       </div>
-
                       {/* Price and Actions */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-brand-primary">
+                          <span className={`text-2xl text-brand-primary ${typography.heading}`}>
                             ₹{product.price}
                           </span>
                           {product.original_price && (
