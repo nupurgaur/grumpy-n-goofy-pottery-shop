@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.resend-template-email]
 verify_jwt = true
+
+[functions.google-calendar-health]
+verify_jwt = false

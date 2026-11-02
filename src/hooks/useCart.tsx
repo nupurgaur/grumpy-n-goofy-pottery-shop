@@ -15,12 +15,25 @@ import {
   getWorkshopCartProductId,
   getWorkshopTicketLimits,
 } from '@/config/workshops';
-import { isDateAllowedForWorkshop, type WorkshopScheduleId } from '@/lib/workshopSchedule';
+import {
+  formatWorkshopSessionDate,
+  isDateAllowedForWorkshop,
+  type WorkshopScheduleId,
+} from '@/lib/workshopSchedule';
+import {
+  fetchWorkshopSessionAvailability,
+  getBookableOneTimeSeats,
+} from '@/lib/workshopSessionAvailability';
 import { TEMPLATE_STOCK_QUANTITY } from '@/config/templates';
 import { format } from 'date-fns';
 import {
+  countOneTimeSeatsInCart,
+  findCartWorkshopSlotConflict,
   getCartItemLineTotal,
   getRequiredParticipantCount,
+  isExclusiveWorkshopSchedule,
+  isOneTimeWorkshopSchedule,
+  workshopSlotConflictMessage,
   type WorkshopAddOn,
   type WorkshopBookingMeta,
   type WorkshopParticipant,
@@ -67,6 +80,7 @@ interface CartContextType {
     image: string;
     ticketLabel: string;
     addOns?: WorkshopAddOn[];
+    foodBeverageContactRequested?: boolean;
   }) => Promise<boolean>;
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   removeItem: (productId: number) => Promise<void>;
@@ -316,6 +330,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     image: string;
     ticketLabel: string;
     addOns?: WorkshopAddOn[];
+    foodBeverageContactRequested?: boolean;
   }): Promise<boolean> => {
     if (!user) {
       toast({
@@ -348,27 +363,44 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const ticketLimits = getWorkshopTicketLimits(booking.scheduleId);
     const workshopBooking: WorkshopBookingMeta = {
       scheduleId: booking.scheduleId,
-      sessionDate: format(booking.date, "yyyy-MM-dd"),
+      sessionDate: formatWorkshopSessionDate(booking.date),
       slot: booking.slot,
       addOns: booking.addOns?.length ? booking.addOns : undefined,
+      foodBeverageContactRequested: booking.foodBeverageContactRequested || undefined,
     };
 
+    const cartSlotConflict = findCartWorkshopSlotConflict(items, {
+      scheduleId: booking.scheduleId,
+      sessionDate: workshopBooking.sessionDate,
+      slot: booking.slot,
+    });
+    if (cartSlotConflict) {
+      toast({
+        title: "Time slot conflict",
+        description: workshopSlotConflictMessage(cartSlotConflict, booking.scheduleId),
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
-      const { data: availability, error: availabilityError } = await supabase.rpc(
-        "get_workshop_session_availability",
-        {
-          p_schedule_id: booking.scheduleId,
-          p_session_date: workshopBooking.sessionDate,
-          p_slot: booking.slot,
-        },
+      const availabilityRow = await fetchWorkshopSessionAvailability(
+        booking.scheduleId,
+        workshopBooking.sessionDate,
+        booking.slot,
       );
-
-      if (availabilityError) throw availabilityError;
-
-      const row = Array.isArray(availability) ? availability[0] : availability;
-      const remaining = row?.remaining ?? 0;
-      const isActive = row?.is_active ?? true;
+      const isActive = availabilityRow.isActive;
       const seatsNeeded = getRequiredParticipantCount(booking.scheduleId, booking.quantity);
+      const oneTimeInCart = isOneTimeWorkshopSchedule(booking.scheduleId)
+        ? countOneTimeSeatsInCart(items, workshopBooking.sessionDate, booking.slot)
+        : 0;
+      const remaining = isOneTimeWorkshopSchedule(booking.scheduleId)
+        ? getBookableOneTimeSeats(availabilityRow.remaining, oneTimeInCart)
+        : isExclusiveWorkshopSchedule(booking.scheduleId)
+          ? availabilityRow.remaining > 0 && availabilityRow.isActive
+            ? availabilityRow.remaining
+            : 0
+          : availabilityRow.remaining;
 
       if (booking.quantity < ticketLimits.min || booking.quantity > ticketLimits.max) {
         toast({
@@ -393,7 +425,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      if (remaining < seatsNeeded) {
+      if (
+        isExclusiveWorkshopSchedule(booking.scheduleId)
+          ? remaining <= 0 || seatsNeeded > remaining
+          : remaining < seatsNeeded
+      ) {
         toast({
           title: "Not enough spots left",
           description: `Only ${remaining} spot${remaining === 1 ? "" : "s"} remain for this session.`,
@@ -425,11 +461,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           booking.scheduleId,
           newQuantity,
         );
+        const poolRemaining = isOneTimeWorkshopSchedule(booking.scheduleId)
+          ? getBookableOneTimeSeats(
+              availabilityRow.remaining,
+              countOneTimeSeatsInCart(items, workshopBooking.sessionDate, booking.slot) -
+                getRequiredParticipantCount(booking.scheduleId, existingItem.quantity),
+            )
+          : availabilityRow.remaining;
 
-        if (remaining < totalSeatsNeeded) {
+        if (poolRemaining < totalSeatsNeeded) {
           toast({
             title: "Not enough spots left",
-            description: `Only ${remaining} spot${remaining === 1 ? "" : "s"} remain for this session.`,
+            description: `Only ${poolRemaining} spot${poolRemaining === 1 ? "" : "s"} remain for this session.`,
             variant: "destructive",
           });
           return false;
@@ -450,6 +493,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             workshop_booking: {
               ...workshopBooking,
               addOns: nextAddOns.length ? nextAddOns : undefined,
+              foodBeverageContactRequested:
+                workshopBooking.foodBeverageContactRequested ??
+                existingItem.workshop_booking?.foodBeverageContactRequested,
               participants: [],
             },
           })

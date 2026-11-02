@@ -3,6 +3,7 @@ import { addDays, format, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { WorkshopScheduleId } from "@/lib/workshopSchedule";
 import { getSlotsForWorkshop } from "@/lib/workshopSchedule";
+import { fetchWorkshopSessionAvailability } from "@/lib/workshopSessionAvailability";
 
 export type WorkshopSessionAvailability = {
   sessionId: string;
@@ -17,14 +18,6 @@ export type WorkshopSessionAvailability = {
 
 export type WorkshopSessionTimeFilter = "1d" | "1w" | "2w" | "1m" | "3m" | "all";
 export type WorkshopSessionTypeFilter = "all" | WorkshopScheduleId;
-
-type RpcRow = {
-  session_id: string;
-  capacity: number;
-  booked: number;
-  remaining: number;
-  is_active: boolean;
-};
 
 export function getWorkshopSessionDateRange(filter: WorkshopSessionTimeFilter): {
   from: string;
@@ -75,25 +68,16 @@ export function useWorkshopSessionAvailability(
       const dateStr = format(sessionDate, "yyyy-MM-dd");
       const results = await Promise.all(
         slots.map(async (slot) => {
-          const { data, error } = await supabase.rpc("get_workshop_session_availability", {
-            p_schedule_id: scheduleId,
-            p_session_date: dateStr,
-            p_slot: slot,
-          });
-
-          if (error) throw error;
-          const row = (Array.isArray(data) ? data[0] : data) as RpcRow | undefined;
-          if (!row) return null;
-
+          const row = await fetchWorkshopSessionAvailability(scheduleId, dateStr, slot);
           return {
-            sessionId: row.session_id,
+            sessionId: row.sessionId ?? "",
             scheduleId,
             sessionDate: dateStr,
             slot,
             capacity: row.capacity,
             booked: row.booked,
             remaining: row.remaining,
-            isActive: row.is_active,
+            isActive: row.isActive,
           } satisfies WorkshopSessionAvailability;
         }),
       );
@@ -153,30 +137,21 @@ export function useWorkshopSessionAdminList(
 
       const enriched = await Promise.all(
         (data ?? []).map(async (session) => {
-          const { data: availability, error: availabilityError } = await supabase.rpc(
-            "get_workshop_session_availability",
-            {
-              p_schedule_id: session.schedule_id,
-              p_session_date: session.session_date,
-              p_slot: session.slot,
-            },
+          const row = await fetchWorkshopSessionAvailability(
+            session.schedule_id as WorkshopScheduleId,
+            session.session_date,
+            session.slot,
           );
-
-          if (availabilityError) throw availabilityError;
-
-          const row = (Array.isArray(availability) ? availability[0] : availability) as
-            | RpcRow
-            | undefined;
 
           return {
             sessionId: session.id,
             scheduleId: session.schedule_id as WorkshopScheduleId,
             sessionDate: session.session_date,
             slot: session.slot,
-            capacity: row?.capacity ?? session.capacity,
-            booked: row?.booked ?? 0,
-            remaining: row?.remaining ?? session.capacity,
-            isActive: row?.is_active ?? session.is_active,
+            capacity: row.capacity,
+            booked: row.booked,
+            remaining: row.remaining,
+            isActive: row.isActive,
           } satisfies WorkshopSessionAvailability;
         }),
       );

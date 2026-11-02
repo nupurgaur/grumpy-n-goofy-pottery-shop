@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Mail, MapPin, Instagram, Youtube } from "lucide-react";
 import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
-import { INSTAGRAM_URL } from "@/config/social";
+import { CONTACT_EMAIL, GOOGLE_MAPS_DIRECTIONS_URL, STUDIO_ADDRESS } from "@/config/contact";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/config/social";
 import { typography } from "@/config/typography";
 import { useDesignYourPotVisible } from "@/hooks/useDesignYourPotVisible";
 
@@ -68,7 +69,7 @@ const Footer = () => {
   return (
     <footer className="text-[#f5f3ef]" style={{ backgroundColor: BRAND_NAVY }}>
       <div className="container mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-x-10 lg:gap-y-12 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-x-10 lg:gap-y-12 items-start">
           {/* Column 1 — Brand */}
           <div className="sm:col-span-2 lg:col-span-1 space-y-5">
             <img
@@ -129,14 +130,26 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="mailto:grumpyngoofy@gmail.com"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className={`${footerText} inline-flex items-center gap-2.5 hover:text-[#E88CA3] transition-colors`}
                 >
                   <Mail className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
-                  grumpyngoofy@gmail.com
+                  {CONTACT_EMAIL}
                 </a>
               </li>
-              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+              <li>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${footerText} inline-flex items-center gap-2.5 hover:text-[#E88CA3] transition-colors`}
+                >
+                  <Instagram className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
+                  {INSTAGRAM_HANDLE}
+                </a>
+              </li>
+              {SOCIAL_LINKS.filter((link) => link.label !== "Instagram").map(
+                ({ label, href, Icon }) => (
                 <li key={label}>
                   <a
                     href={href}
@@ -149,39 +162,18 @@ const Footer = () => {
                   </a>
                 </li>
               ))}
-              <li className={`${footerText} inline-flex items-center gap-2.5`}>
-                <MapPin className="h-4 w-4 shrink-0 text-[#E88CA3]/80" />
-                Delhi NCR, India
+              <li>
+                <a
+                  href={GOOGLE_MAPS_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${footerText} inline-flex items-start gap-2.5 hover:text-[#E88CA3] transition-colors`}
+                >
+                  <MapPin className="h-4 w-4 shrink-0 text-[#E88CA3]/80 mt-0.5" />
+                  <span>{STUDIO_ADDRESS}</span>
+                </a>
               </li>
             </ul>
-          </FooterColumn>
-
-          {/* Column 5 — Join the Clay Club */}
-          <FooterColumn
-            title="Join the Clay Club"
-            className="sm:col-span-2 lg:col-span-1"
-          >
-            <p className="text-xs text-[#f5f3ef]/65 font-sans leading-relaxed mb-4">
-              Get workshop announcements, new collections, and studio updates.
-            </p>
-            <form
-              className="space-y-3"
-              onSubmit={(e) => e.preventDefault()}
-              aria-label="Newsletter signup"
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-3 py-2.5 text-sm rounded-md bg-[#f5f3ef]/10 border border-[#f5f3ef]/20 text-[#f5f3ef] placeholder:text-[#f5f3ef]/50 focus:outline-none focus:ring-2 focus:ring-[#E88CA3]/40"
-              />
-              <Button
-                type="submit"
-                variant="secondary"
-                className="w-full bg-[#E88CA3] text-[#0D2B52] hover:bg-[#E88CA3]/90 font-medium"
-              >
-                Join the Club
-              </Button>
-            </form>
           </FooterColumn>
         </div>
 

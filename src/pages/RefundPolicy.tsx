@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BRAND_NAME } from "@/config/brand";
+import { CONTACT_EMAIL } from "@/config/contact";
 import { typography } from "@/config/typography";
 
 const RefundPolicy = () => {
@@ -49,14 +50,14 @@ const RefundPolicy = () => {
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>How to Raise a Return</h2>
             <ol>
-              <li>Email us at <strong>grumpyngoofy@gmail.com</strong> within 48 hours of delivery.</li>
+              <li>Email us at <strong>{CONTACT_EMAIL}</strong> within 48 hours of delivery.</li>
               <li>Attach order ID, photos/video of the package and product, and a brief description.</li>
               <li>We’ll arrange return pickup where serviceable, or share return instructions.</li>
             </ol>
 
             <h2 className={`text-xl mt-6 text-brand-primary ${typography.heading}`}>Contact</h2>
             <p>
-              For any questions, write to <strong>grumpyngoofy@gmail.com</strong>. We’re happy to help.
+              For any questions, write to <strong>{CONTACT_EMAIL}</strong>. We’re happy to help.
             </p>
           </CardContent>
         </Card>

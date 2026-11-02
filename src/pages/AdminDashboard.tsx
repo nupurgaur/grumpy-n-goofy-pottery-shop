@@ -4,7 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, BarChart3, ArrowLeft, ShoppingCart, CalendarHeart } from 'lucide-react';
+import { Package, BarChart3, ArrowLeft, ShoppingCart, CalendarHeart, CalendarDays } from 'lucide-react';
+import WorkshopStudioCalendar from '@/components/admin/WorkshopStudioCalendar';
 import ProductManagement from '@/components/admin/ProductManagement';
 import InventoryOverview from '@/components/admin/InventoryOverview';
 import OrderManagement from '@/components/admin/OrderManagement';
@@ -105,7 +106,7 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
             <TabsTrigger value="orders" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               Orders
@@ -117,6 +118,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="workshops" className="flex items-center gap-2">
               <CalendarHeart className="h-4 w-4" />
               Workshops
+            </TabsTrigger>
+            <TabsTrigger value="studio-calendar" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Studio calendar
             </TabsTrigger>
             <TabsTrigger value="inventory" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -134,6 +139,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="workshops">
             <WorkshopManagement />
+          </TabsContent>
+
+          <TabsContent value="studio-calendar">
+            <WorkshopStudioCalendar />
           </TabsContent>
           
           <TabsContent value="inventory">

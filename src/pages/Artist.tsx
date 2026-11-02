@@ -2,8 +2,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Instagram, Facebook, Twitter } from "lucide-react";
-import { BrandLogo } from "@/components/BrandLogo";
 import { typography } from "@/config/typography";
+import {
+  FOUNDER_NAME,
+  FOUNDER_PHOTO,
+  FOUNDER_PHOTO_ALT,
+} from "@/config/founder";
 import { Link } from "react-router-dom";
 import { INSTAGRAM_URL } from "@/config/social";
 
@@ -24,7 +28,7 @@ const ArtistPage = () => {
             </h1>
 
             <div className="space-y-4 text-muted-foreground font-sans leading-relaxed max-w-none">
-              <p className="text-foreground/90">Hi, I&apos;m Nupur.</p>
+              <p className="text-foreground/90">Hi, I&apos;m {FOUNDER_NAME}.</p>
 
               <p>
                 I&apos;m originally from Gorakhpur, and like many small-town girls with
@@ -99,17 +103,17 @@ const ArtistPage = () => {
             </div>
               </div>
 
-              {/* Photo placeholder — right */}
               <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28">
-                <div
-                  className="flex min-h-[320px] sm:min-h-[400px] lg:min-h-[520px] items-center justify-center rounded-2xl bg-white p-8 sm:p-10 border border-border/40"
-                  aria-label="Photo placeholder"
-                >
-                  <BrandLogo
-                    iconClassName="h-28 sm:h-32 lg:h-36"
-                    titleClassName="text-3xl sm:text-4xl"
-                    className="flex-col sm:flex-row items-center"
+                <div className="overflow-hidden rounded-2xl border border-border/40 bg-white shadow-card">
+                  <img
+                    src={FOUNDER_PHOTO}
+                    alt={FOUNDER_PHOTO_ALT}
+                    className="w-full aspect-[3/4] object-cover object-center"
                   />
+                  <p className="px-5 py-4 text-sm text-muted-foreground font-sans leading-relaxed border-t border-border/30">
+                    {FOUNDER_NAME} — handbuilding, wheel throwing, and studio
+                    workshops since 2023.
+                  </p>
                 </div>
               </aside>
             </div>

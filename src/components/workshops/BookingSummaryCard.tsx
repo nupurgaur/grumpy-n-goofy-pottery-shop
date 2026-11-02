@@ -14,9 +14,11 @@ type BookingSummaryCardProps = {
   totalPriceLabel: string;
   addonLabel?: string;
   addonPriceLabel?: string;
+  contactNote?: string;
   ctaLabel: string;
   onBook: () => void;
   booking?: boolean;
+  submitDisabled?: boolean;
 };
 
 export const BookingSummaryCard = ({
@@ -29,9 +31,11 @@ export const BookingSummaryCard = ({
   totalPriceLabel,
   addonLabel,
   addonPriceLabel,
+  contactNote,
   ctaLabel,
   onBook,
   booking = false,
+  submitDisabled = false,
 }: BookingSummaryCardProps) => (
   <Card className="border border-border/50 shadow-card bg-card animate-in fade-in slide-in-from-bottom-2 duration-300">
     <CardContent className="p-4 sm:p-5 space-y-4">
@@ -69,6 +73,14 @@ export const BookingSummaryCard = ({
             <dd className="font-medium text-brand-primary text-right">{addonPriceLabel}</dd>
           </div>
         )}
+        {contactNote && (
+          <div className="flex justify-between gap-4 border-b border-border/40 pb-3">
+            <dt className="text-muted-foreground">Food &amp; beverages</dt>
+            <dd className="font-medium text-brand-primary text-right text-xs sm:text-sm max-w-[14rem]">
+              {contactNote}
+            </dd>
+          </div>
+        )}
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">Total</dt>
           <dd className="font-semibold text-brand-primary text-right">{totalPriceLabel}</dd>
@@ -80,7 +92,7 @@ export const BookingSummaryCard = ({
         size="lg"
         className="w-full"
         onClick={onBook}
-        disabled={booking}
+        disabled={booking || submitDisabled}
       >
         {booking ? "Adding to cart…" : ctaLabel}
       </Button>

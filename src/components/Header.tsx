@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { BRAND_NAME, BRAND_LOGO_FOOTER, BRAND_NAVY } from "@/config/brand";
 import { navigateToAbout } from "@/lib/navigateToAbout";
 import { useDesignYourPotVisible } from "@/hooks/useDesignYourPotVisible";
+import { SHOP_CATEGORIES } from "@/config/shopCategories";
 
 const headerText = "text-[#f5f3ef]";
 const headerHover = "text-[#f5f3ef] hover:text-white hover:bg-white/10";
@@ -23,13 +24,7 @@ const Header = () => {
 
   const categories = [
     { value: "all", label: "All Products" },
-    { value: "mugs", label: "Mugs" },
-    { value: "bowls", label: "Bowls" },
-    { value: "plates", label: "Plates" },
-    { value: "ceramic-clocks", label: "Ceramic Clocks" },
-    { value: "lamps", label: "Lamps" },
-    { value: "spoon-rests", label: "Spoon Rests" },
-    { value: "vases", label: "Vases" },
+    ...SHOP_CATEGORIES.map(({ value, label }) => ({ value, label })),
   ];
 
   return (

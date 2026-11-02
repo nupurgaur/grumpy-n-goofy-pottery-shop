@@ -5,7 +5,6 @@ import { typography } from "@/config/typography";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useWorkshopCatalog } from "@/hooks/useWorkshopCatalog";
-import { FOOD_WINE_ADDON } from "@/config/workshops";
 import {
   Clock,
   Heart,
@@ -25,8 +24,6 @@ export const DateNightExperience = () => {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [booking, setBooking] = useState(false);
-  const [includeFoodWine, setIncludeFoodWine] = useState(false);
-
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     setSelectedSlot(null);
@@ -51,13 +48,11 @@ export const DateNightExperience = () => {
         quantity,
         image: dateNight.imageUrl,
         ticketLabel: `${quantity} ${quantity === 1 ? "couple" : "couples"}`,
-        addOns: includeFoodWine ? [{ ...FOOD_WINE_ADDON }] : [],
       });
       if (added) {
         setSelectedDate(undefined);
         setSelectedSlot(null);
         setQuantity(1);
-        setIncludeFoodWine(false);
       }
     } finally {
       setBooking(false);
@@ -71,7 +66,7 @@ export const DateNightExperience = () => {
   if (!dateNight) {
     return (
       <p className="text-sm text-muted-foreground font-sans">
-        Date Night is not available right now.
+        Pottery date for couples is not available right now.
       </p>
     );
   }
@@ -94,7 +89,7 @@ export const DateNightExperience = () => {
         <div className="h-[14rem] sm:h-[18rem] lg:h-[22rem] shrink-0 overflow-hidden rounded-xl border border-border/50 shadow-card">
           <WorkshopPhotoSlot
             imageUrl={dateNight.imageUrl}
-            alt="Clay Date Night workshop"
+            alt="Pottery date for couples workshop"
             className="h-full w-full rounded-none border-0 shadow-none"
             aspectClass="h-full w-full object-cover object-center"
           />
@@ -110,9 +105,9 @@ export const DateNightExperience = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-sans">
                   <Clock className="h-4 w-4 text-brand-secondary shrink-0" />
-                  <span className="text-muted-foreground">Schedule:</span>
+                  <span className="text-muted-foreground">Time slots:</span>
                   <span className="font-medium text-brand-primary">
-                    {dateNight.time || "2 Hours"}
+                    {dateNight.time}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-sans">
@@ -173,8 +168,6 @@ export const DateNightExperience = () => {
             onQuantityChange={setQuantity}
             onBook={handleBook}
             booking={booking}
-            foodWineSelected={includeFoodWine}
-            onFoodWineChange={setIncludeFoodWine}
           />
         </div>
       </div>

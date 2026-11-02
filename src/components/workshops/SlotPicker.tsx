@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
+import { STUDIO_ONE_TIME_SLOT_CAPACITY } from "@/config/workshops";
 import type { WorkshopSessionAvailability } from "@/hooks/useWorkshopSessions";
+import { isExclusiveWorkshopSchedule } from "@/lib/workshopParticipants";
+import type { WorkshopScheduleId } from "@/lib/workshopSchedule";
 
 type SlotPickerProps = {
   slots: string[];
@@ -9,7 +12,10 @@ type SlotPickerProps = {
   compact?: boolean;
   availabilityBySlot?: Record<string, WorkshopSessionAvailability>;
   seatsPerBooking?: number;
-  coupleSlot?: boolean;
+  cartBlockedSlots?: ReadonlySet<string>;
+  /** Shared one-time pool: show seats left from paid orders (remaining on availability row). */
+  showPoolSpotsLeft?: boolean;
+  scheduleId?: WorkshopScheduleId;
 };
 
 export const SlotPicker = ({
@@ -20,7 +26,9 @@ export const SlotPicker = ({
   compact = false,
   availabilityBySlot = {},
   seatsPerBooking = 1,
-  coupleSlot = false,
+  cartBlockedSlots,
+  showPoolSpotsLeft = false,
+  scheduleId,
 }: SlotPickerProps) => (
   <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
     <p className="text-xs font-sans font-medium text-muted-foreground">{label}</p>
@@ -28,9 +36,19 @@ export const SlotPicker = ({
       {slots.map((slot) => {
         const isSelected = selected === slot;
         const availability = availabilityBySlot[slot];
-        const remaining = availability?.remaining ?? 0;
-        const bookableUnits = Math.floor(remaining / Math.max(seatsPerBooking, 1));
-        const isFull = availability ? bookableUnits <= 0 || !availability.isActive : false;
+        const rawRemaining = availability?.remaining ?? 0;
+        const remaining = showPoolSpotsLeft
+          ? Math.min(rawRemaining, STUDIO_ONE_TIME_SLOT_CAPACITY)
+          : rawRemaining;
+        const bookableUnits =
+          scheduleId && isExclusiveWorkshopSchedule(scheduleId)
+            ? availability && availability.remaining > 0 && availability.isActive
+              ? 1
+              : 0
+            : Math.floor(remaining / Math.max(seatsPerBooking, 1));
+        const cartBlocked = cartBlockedSlots?.has(slot) ?? false;
+        const isFull =
+          cartBlocked || (availability ? bookableUnits <= 0 || !availability.isActive : false);
 
         return (
           <button
@@ -48,13 +66,18 @@ export const SlotPicker = ({
             )}
           >
             <span>{slot}</span>
-            {availability && (
-              <span className={cn("block text-xs mt-0.5", isSelected ? "text-white/80" : "text-muted-foreground")}>
+            {(isFull || (showPoolSpotsLeft && availability && remaining > 0)) && (
+              <span
+                className={cn(
+                  "block text-xs mt-0.5",
+                  isSelected ? "text-white/80" : "text-muted-foreground",
+                )}
+              >
                 {isFull
-                  ? "Full"
-                  : coupleSlot
-                    ? "1 couple left"
-                    : `${bookableUnits} spot${bookableUnits === 1 ? "" : "s"} left`}
+                  ? cartBlocked
+                    ? "Unavailable"
+                    : "Full"
+                  : `${remaining} spot${remaining === 1 ? "" : "s"} left`}
               </span>
             )}
           </button>

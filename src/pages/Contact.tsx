@@ -4,16 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Instagram, MapPin } from "lucide-react";
+import { ExternalLink, Mail, Instagram, MapPin, Navigation } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { typography } from "@/config/typography";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/config/social";
+import {
+  CONTACT_EMAIL,
+  GOOGLE_MAPS_DIRECTIONS_URL,
+  GOOGLE_MAPS_EMBED_URL,
+  GOOGLE_MAPS_PROFILE_URL,
+  STUDIO_ADDRESS,
+} from "@/config/contact";
 import { sendContactMessage } from "@/lib/sendContactMessage";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
-
-const CONTACT_EMAIL = "grumpyngoofy@gmail.com";
-const LOCATION = "Delhi NCR, India";
 
 const QUICK_CONTACT = [
   {
@@ -43,10 +47,12 @@ const QUICK_CONTACT = [
     ),
   },
   {
-    label: "Location",
+    label: "Studio",
     icon: MapPin,
     content: (
-      <span className="text-sm text-muted-foreground">{LOCATION}</span>
+      <address className="text-sm text-muted-foreground not-italic leading-relaxed">
+        {STUDIO_ADDRESS}
+      </address>
     ),
   },
 ] as const;
@@ -155,6 +161,52 @@ const ContactPage = () => {
           </div>
         </section>
 
+        {/* Map & directions */}
+        <section className="pb-14 sm:pb-16 border-b border-border/50">
+          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+            <div className="text-center mb-8">
+              <h2 className={`text-2xl text-brand-primary mb-2 ${typography.title}`}>
+                Visit the studio
+              </h2>
+              <p className="text-sm text-muted-foreground font-sans max-w-xl mx-auto">
+                {STUDIO_ADDRESS}
+              </p>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-border/60 shadow-card aspect-[16/10] sm:aspect-[21/9] bg-muted/30">
+              <iframe
+                title="Goofy n Grumpy studio location on Google Maps"
+                src={GOOGLE_MAPS_EMBED_URL}
+                className="w-full h-full min-h-[240px] border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mt-6">
+              <Button variant="quirky" size="lg" asChild>
+                <a
+                  href={GOOGLE_MAPS_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  Get directions
+                </a>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <a
+                  href={GOOGLE_MAPS_PROFILE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View on Google Maps
+                </a>
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {/* Form + details */}
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
@@ -209,11 +261,29 @@ const ContactPage = () => {
                     <MapPin className="h-4 w-4 mt-0.5 text-brand-secondary shrink-0" strokeWidth={1.5} />
                     <div>
                       <p className="text-xs uppercase tracking-wider text-brand-primary/70 font-sans mb-0.5">
-                        Location
+                        Studio
                       </p>
-                      <span className="text-sm text-muted-foreground">
-                        {LOCATION}
-                      </span>
+                      <address className="text-sm text-muted-foreground not-italic leading-relaxed">
+                        {STUDIO_ADDRESS}
+                      </address>
+                      <div className="mt-2 flex flex-col gap-1">
+                        <a
+                          href={GOOGLE_MAPS_DIRECTIONS_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-brand-secondary hover:underline"
+                        >
+                          Get directions
+                        </a>
+                        <a
+                          href={GOOGLE_MAPS_PROFILE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-brand-secondary hover:underline"
+                        >
+                          Google Maps profile
+                        </a>
+                      </div>
                     </div>
                   </li>
                 </ul>

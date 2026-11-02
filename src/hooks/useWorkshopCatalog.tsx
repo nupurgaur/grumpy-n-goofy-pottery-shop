@@ -6,11 +6,18 @@ import {
   DATE_NIGHT,
   PRIVATE_CLAY_PARTY,
   COURSES,
-  PAUSED_ONE_TIME_EXPERIENCE_IDS,
+  DEFAULT_HIDDEN_ONE_TIME_EXPERIENCE_IDS,
+  WORKSHOP_SCHEDULE_NOTE,
   type WorkshopTopTab,
   type OneTimeExperienceId,
   type WorkshopScheduleId,
 } from "@/config/workshops";
+import {
+  DEFAULT_FOOD_BEVERAGE_CONTACT_CONFIG,
+  encodeFoodBeverageContactAddOns,
+  parseFoodBeverageContactConfig,
+  type FoodBeverageContactConfig,
+} from "@/lib/workshopFoodBeverage";
 
 export type WorkshopTabRecord = {
   id: WorkshopTopTab;
@@ -35,7 +42,7 @@ export type WorkshopExperienceRecord = {
   sort_order: number;
   time_slot: string | null;
   includes: string[];
-  add_ons: string[];
+  add_ons: unknown[];
   firing_note: string | null;
   message_card: string | null;
   status_text: string | null;
@@ -74,11 +81,12 @@ export type CatalogPrivateParty = {
   description: string;
   imageUrl: string;
   duration: string;
+  schedule: string;
   price: number;
   priceLabel: string;
   additionalNote?: string;
   includes: string[];
-  addOns: string[];
+  foodBeverageContact: FoodBeverageContactConfig | null;
 };
 
 export type CatalogCourses = {
@@ -93,6 +101,14 @@ function parseJsonArray(value: unknown): string[] {
   }
   return [];
 }
+
+function parseAddOns(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+const ONE_TIME_CONFIG = new Map(
+  ONE_TIME_EXPERIENCES.map((experience) => [experience.id, experience]),
+);
 
 function staticFallback(): {
   tabs: WorkshopTabRecord[];
@@ -118,7 +134,7 @@ function staticFallback(): {
       price_label: e.priceLabel,
       additional_note: e.additionalNote ?? null,
       image_url: e.imageUrl,
-      is_visible: !PAUSED_ONE_TIME_EXPERIENCE_IDS.includes(e.id),
+      is_visible: !DEFAULT_HIDDEN_ONE_TIME_EXPERIENCE_IDS.includes(e.id),
       sort_order: i + 1,
       time_slot: null,
       includes: [],
@@ -140,9 +156,9 @@ function staticFallback(): {
       image_url: DATE_NIGHT.imageUrl,
       is_visible: true,
       sort_order: 1,
-      time_slot: DATE_NIGHT.time,
+      time_slot: WORKSHOP_SCHEDULE_NOTE,
       includes: DATE_NIGHT.includes,
-      add_ons: DATE_NIGHT.addOns,
+      add_ons: [],
       firing_note: DATE_NIGHT.firingNote,
       message_card: DATE_NIGHT.messageCard,
       status_text: null,
@@ -160,9 +176,9 @@ function staticFallback(): {
       image_url: PRIVATE_CLAY_PARTY.imageUrl,
       is_visible: true,
       sort_order: 1,
-      time_slot: null,
+      time_slot: WORKSHOP_SCHEDULE_NOTE,
       includes: PRIVATE_CLAY_PARTY.includes,
-      add_ons: PRIVATE_CLAY_PARTY.addOns,
+      add_ons: encodeFoodBeverageContactAddOns(DEFAULT_FOOD_BEVERAGE_CONTACT_CONFIG),
       firing_note: null,
       message_card: null,
       status_text: null,
@@ -208,7 +224,7 @@ function mapExperienceRow(row: Record<string, unknown>): WorkshopExperienceRecor
     sort_order: Number(row.sort_order ?? 0),
     time_slot: row.time_slot ? String(row.time_slot) : null,
     includes: parseJsonArray(row.includes),
-    add_ons: parseJsonArray(row.add_ons),
+    add_ons: parseAddOns(row.add_ons),
     firing_note: row.firing_note ? String(row.firing_note) : null,
     message_card: row.message_card ? String(row.message_card) : null,
     status_text: row.status_text ? String(row.status_text) : null,
@@ -242,8 +258,8 @@ export const useWorkshopCatalog = (options?: { includeHidden?: boolean }) => {
 
       const tabsFromDb = (tabsRes.data ?? []).map((row) => ({
         id: row.id as WorkshopTopTab,
-        label: row.label,
-        tagline: row.tagline,
+        label: String(row.label),
+        tagline: String(row.tagline ?? ""),
         is_visible: row.is_visible,
         sort_order: row.sort_order,
       }));
@@ -260,10 +276,16 @@ export const useWorkshopCatalog = (options?: { includeHidden?: boolean }) => {
             : tab,
         ),
       );
-      setExperiences([
-        ...experiencesFromDb,
-        ...fallback.experiences.filter((exp) => !experienceIds.has(exp.id)),
-      ]);
+      const experienceById = new Map<string, WorkshopExperienceRecord>();
+      for (const exp of experiencesFromDb) {
+        experienceById.set(exp.id, exp);
+      }
+      for (const exp of fallback.experiences) {
+        if (!experienceById.has(exp.id)) {
+          experienceById.set(exp.id, exp);
+        }
+      }
+      setExperiences(Array.from(experienceById.values()));
     } catch {
       const fallback = staticFallback();
       setTabs(fallback.tabs);
@@ -296,22 +318,20 @@ export const useWorkshopCatalog = (options?: { includeHidden?: boolean }) => {
   const oneTimeExperiences: CatalogOneTimeExperience[] = useMemo(
     () =>
       getExperiencesForTab("one-time")
-        .filter(
-          (e) =>
-            includeHidden ||
-            !PAUSED_ONE_TIME_EXPERIENCE_IDS.includes(e.id as OneTimeExperienceId),
-        )
-        .map((e) => ({
-          id: e.id as OneTimeExperienceId,
-          title: e.title,
-          tagline: e.tagline,
-          description: e.description,
-          duration: e.duration ?? "",
-          price: e.price,
-          priceLabel: e.price_label,
-          additionalNote: e.additional_note ?? undefined,
-          imageUrl: e.image_url,
-        })),
+        .map((e) => {
+          const config = ONE_TIME_CONFIG.get(e.id as OneTimeExperienceId);
+          return {
+            id: e.id as OneTimeExperienceId,
+            title: e.title,
+            tagline: e.tagline,
+            description: e.description,
+            duration: e.duration ?? config?.duration ?? "",
+            price: e.price,
+            priceLabel: e.price_label,
+            additionalNote: e.additional_note ?? undefined,
+            imageUrl: e.image_url || config?.imageUrl || "",
+          };
+        }),
     [getExperiencesForTab, includeHidden],
   );
 
@@ -322,13 +342,12 @@ export const useWorkshopCatalog = (options?: { includeHidden?: boolean }) => {
       title: e.title,
       tagline: e.tagline,
       description: e.description,
-      imageUrl: e.image_url,
-      time: e.time_slot ?? "",
+      imageUrl: e.image_url || DATE_NIGHT.imageUrl,
+      time: e.time_slot || WORKSHOP_SCHEDULE_NOTE,
       price: e.price,
       priceLabel: e.price_label,
-      slot: e.time_slot ?? "",
+      slot: DATE_NIGHT.slot,
       includes: e.includes,
-      addOns: e.add_ons,
       firingNote: e.firing_note ?? "",
       messageCard: e.message_card ?? "",
     };
@@ -337,17 +356,19 @@ export const useWorkshopCatalog = (options?: { includeHidden?: boolean }) => {
   const privateParty: CatalogPrivateParty | null = useMemo(() => {
     const e = getExperiencesForTab("private-parties")[0];
     if (!e) return null;
+    const contact = parseFoodBeverageContactConfig(e.add_ons);
     return {
       title: e.title,
       tagline: e.tagline,
       description: e.description,
-      imageUrl: e.image_url,
-      duration: e.duration ?? "2 Hours",
+      imageUrl: e.image_url || PRIVATE_CLAY_PARTY.imageUrl,
+      duration: e.duration ?? PRIVATE_CLAY_PARTY.duration,
+      schedule: e.time_slot || WORKSHOP_SCHEDULE_NOTE,
       price: e.price,
       priceLabel: e.price_label,
       additionalNote: e.additional_note ?? undefined,
       includes: e.includes,
-      addOns: e.add_ons,
+      foodBeverageContact: contact.enabled ? contact : null,
     };
   }, [getExperiencesForTab]);
 

@@ -3,7 +3,12 @@ import { ArrowRight } from "lucide-react";
 import { HERO_CAROUSEL_IMAGES } from "@/config/heroCarousel";
 import { typography } from "@/config/typography";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
-import { homeSectionClasses, type HomeSectionTone } from "@/config/homeSections";
+import {
+  HOME_SECTION_CAROUSEL_CLASS,
+  HOME_SECTION_CAROUSEL_WIDTH_CLASS,
+  homeSectionClasses,
+  type HomeSectionTone,
+} from "@/config/homeSections";
 
 const BRAND_PILLARS = [
   { title: "PLAYFUL", description: "Collect expressive ceramics" },
@@ -43,13 +48,10 @@ const Hero = ({ sectionTone = "off-white" }: { sectionTone?: HomeSectionTone }) 
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <a href="#workshops">Join a Workshop</a>
-              </Button>
             </div>
 
             <div
-              className="mt-12 lg:mt-14 grid w-full min-w-0 grid-cols-1 sm:grid-cols-3"
+              className="mt-8 lg:mt-10 grid w-full min-w-0 grid-cols-1 sm:grid-cols-3"
               aria-label="Brand pillars"
             >
               {BRAND_PILLARS.map((pillar, index) => (
@@ -74,11 +76,13 @@ const Hero = ({ sectionTone = "off-white" }: { sectionTone?: HomeSectionTone }) 
 
           {/* Hero Image Carousel */}
           <div className="relative lg:col-span-3 lg:justify-self-end lg:ml-16 xl:ml-24">
-            <div className="relative w-full max-w-[92vw] lg:w-[620px] xl:w-[700px] flex-shrink-0 overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth">
+            <div
+              className={`relative ${HOME_SECTION_CAROUSEL_WIDTH_CLASS} flex-shrink-0 overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth`}
+            >
               <ProductImageCarousel
                 images={HERO_CAROUSEL_IMAGES}
                 alt="Beautiful handcrafted pottery collection"
-                className="w-full h-[420px] sm:h-[520px] lg:h-[620px]"
+                className={HOME_SECTION_CAROUSEL_CLASS}
                 showArrows={true}
                 showDots={true}
                 autoPlay={true}

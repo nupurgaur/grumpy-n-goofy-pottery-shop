@@ -22,12 +22,14 @@ import {
   getCartItemLineTotal,
   getRequiredParticipantCount,
   getWorkshopAddonTotal,
-  getWorkshopBookingMeta,
+  buildWorkshopBookingMetaFromItem,
+  normalizeWorkshopSlot,
   resizeParticipants,
   serializeParticipantsForOrder,
   validateWorkshopParticipants,
   type WorkshopParticipant,
 } from '@/lib/workshopParticipants';
+import { readEdgeFunctionErrorMessage } from '@/lib/edgeFunctionError';
 
 declare global {
   interface Window {
@@ -120,7 +122,7 @@ const Checkout = () => {
       items.forEach((item) => {
         if (!isWorkshopCartItem(item.product_id, item.product_name)) return;
 
-        const booking = getWorkshopBookingMeta(item);
+        const booking = buildWorkshopBookingMetaFromItem(item);
         if (!booking) return;
 
         const required = getRequiredParticipantCount(booking.scheduleId, item.quantity);
@@ -306,7 +308,7 @@ const Checkout = () => {
     items.forEach((item) => {
       if (!isWorkshopCartItem(item.product_id, item.product_name)) return;
 
-      const booking = getWorkshopBookingMeta(item);
+      const booking = buildWorkshopBookingMetaFromItem(item);
       if (!booking) {
         errors.push("Workshop booking details are missing.");
         return;
@@ -511,7 +513,7 @@ const Checkout = () => {
                 return item;
               }
 
-              const booking = getWorkshopBookingMeta(item);
+              const booking = buildWorkshopBookingMetaFromItem(item);
               if (!booking) return item;
 
               return {
@@ -519,7 +521,7 @@ const Checkout = () => {
                 workshop_booking: {
                   scheduleId: booking.scheduleId,
                   sessionDate: booking.sessionDate,
-                  slot: booking.slot,
+                  slot: normalizeWorkshopSlot(booking.slot),
                   addOns: booking.addOns,
                   participants: serializeParticipantsForOrder(
                     participantsByItemId[item.id] ?? [],
@@ -566,8 +568,10 @@ const Checkout = () => {
               }
             });
 
-            if (verifyError || !verifyData.success) {
-              throw new Error(verifyData?.error || 'Payment verification failed');
+            if (verifyError || !verifyData?.success) {
+              throw new Error(
+                await readEdgeFunctionErrorMessage(verifyData, verifyError),
+              );
             }
 
             toast({
@@ -672,6 +676,11 @@ const Checkout = () => {
                             .join(", ")}`
                         : ""}
                     </p>
+                    {item.workshop_booking?.foodBeverageContactRequested && (
+                      <p className="text-xs text-muted-foreground">
+                        Food &amp; beverages — we&apos;ll contact you separately
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="font-medium">₹{getCartItemLineTotal(item).toFixed(2)}</p>

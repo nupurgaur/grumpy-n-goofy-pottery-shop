@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { typography } from "@/config/typography";
 import {
-  FOOD_WINE_ADDON,
   MIN_PRIVATE_PARTY_TICKETS,
   MAX_PRIVATE_PARTY_TICKETS,
 } from "@/config/workshops";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useWorkshopCatalog } from "@/hooks/useWorkshopCatalog";
-import { Clock, IndianRupee, PartyPopper, Sparkles, Users } from "lucide-react";
+import { Clock, IndianRupee, PartyPopper, Sparkles, Users, Wine } from "lucide-react";
 import { WorkshopBookingPanel } from "./WorkshopBookingPanel";
 import { WorkshopPhotoSlot } from "./WorkshopPhotoSlot";
 
@@ -18,12 +17,15 @@ export const PrivateClayPartyExperience = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addWorkshopBooking } = useCart();
-  const { privateParty, loading } = useWorkshopCatalog();
+  const { privateParty, loading, tabs } = useWorkshopCatalog();
+  const privateTab = tabs.find((tab) => tab.id === "private-parties");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(MIN_PRIVATE_PARTY_TICKETS);
   const [booking, setBooking] = useState(false);
-  const [includeFoodWine, setIncludeFoodWine] = useState(false);
+  const [foodBeverageContact, setFoodBeverageContact] = useState(false);
+
+  const contactConfig = privateParty?.foodBeverageContact;
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -49,13 +51,14 @@ export const PrivateClayPartyExperience = () => {
         quantity,
         image: privateParty.imageUrl,
         ticketLabel: `${quantity} ${quantity === 1 ? "guest" : "guests"}`,
-        addOns: includeFoodWine ? [{ ...FOOD_WINE_ADDON }] : [],
+        foodBeverageContactRequested:
+          contactConfig && foodBeverageContact ? true : undefined,
       });
       if (added) {
         setSelectedDate(undefined);
         setSelectedSlot(null);
         setQuantity(MIN_PRIVATE_PARTY_TICKETS);
-        setIncludeFoodWine(false);
+        setFoodBeverageContact(false);
       }
     } finally {
       setBooking(false);
@@ -80,11 +83,11 @@ export const PrivateClayPartyExperience = () => {
         <div className="flex items-center gap-3">
           <PartyPopper className="h-6 w-6 text-brand-secondary shrink-0" />
           <h2 className={`text-2xl sm:text-3xl text-brand-primary ${typography.heading}`}>
-            {privateParty.title}
+            {privateParty.title || privateTab?.label}
           </h2>
         </div>
         <p className="text-sm font-sans text-brand-secondary/90 font-medium">
-          {privateParty.tagline}
+          {privateParty.tagline || privateTab?.tagline}
         </p>
       </div>
 
@@ -111,6 +114,13 @@ export const PrivateClayPartyExperience = () => {
                   <span className="text-muted-foreground">Duration:</span>
                   <span className="font-medium text-brand-primary">
                     {privateParty.duration}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2 text-sm font-sans w-full sm:w-auto">
+                  <Clock className="h-4 w-4 text-brand-secondary shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground shrink-0">Time slots:</span>
+                  <span className="font-medium text-brand-primary">
+                    {privateParty.schedule}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-sans">
@@ -148,6 +158,15 @@ export const PrivateClayPartyExperience = () => {
                 </div>
               )}
 
+              {contactConfig?.pageNote && (
+                <p
+                  className="rounded-xl border border-brand-secondary/40 bg-[#FCE8EE]/50 px-4 py-3 text-sm font-sans text-brand-primary flex items-start gap-2"
+                >
+                  <Wine className="h-4 w-4 text-brand-secondary shrink-0 mt-0.5" />
+                  <span>{contactConfig.pageNote}</span>
+                </p>
+              )}
+
               {privateParty.additionalNote && (
                 <p className="text-sm text-muted-foreground font-sans italic border-l-2 border-brand-secondary/40 pl-4">
                   {privateParty.additionalNote}
@@ -172,8 +191,18 @@ export const PrivateClayPartyExperience = () => {
             onQuantityChange={setQuantity}
             onBook={handleBook}
             booking={booking}
-            foodWineSelected={includeFoodWine}
-            onFoodWineChange={setIncludeFoodWine}
+            foodBeverageContact={
+              contactConfig
+                ? {
+                    label: contactConfig.checkboxLabel,
+                    hint: "No charge now — we'll contact you to arrange food & beverages.",
+                  }
+                : undefined
+            }
+            foodBeverageContactSelected={foodBeverageContact}
+            onFoodBeverageContactChange={
+              contactConfig ? setFoodBeverageContact : undefined
+            }
           />
         </div>
       </div>

@@ -20,25 +20,22 @@ import {
 } from "@/hooks/useWorkshopSessions";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { addDays } from "date-fns";
-import { BOOKABLE_WORKSHOP_SCHEDULES } from "@/config/workshops";
 import {
-  getSlotsForWorkshop,
-  getWorkshopBookingMinDate,
-  isDateAllowedForWorkshop,
-  type WorkshopScheduleId,
-} from "@/lib/workshopSchedule";
+  WORKSHOP_SCHEDULE_IDS,
+  getActiveWorkshopSchedules,
+} from "@/config/workshops";
+import { useWorkshopCatalog } from "@/hooks/useWorkshopCatalog";
+import { generateUpcomingWorkshopSessions } from "@/lib/workshopSessionGeneration";
+import { type WorkshopScheduleId } from "@/lib/workshopSchedule";
 import { RefreshCw, Save } from "lucide-react";
 
 const SCHEDULE_LABELS: Record<WorkshopScheduleId, string> = {
   "paint-your-own-pot": "Paint Your Own Pot",
   "handbuilding-ceramics": "Handbuilding Ceramics",
   "wheel-throwing": "Wheel Throwing",
-  "date-night": "Clay Date Night",
+  "date-night": "Pottery date for couples",
   "private-clay-parties": "Private Clay Parties",
 };
-
-const WORKSHOP_SCHEDULES: WorkshopScheduleId[] = BOOKABLE_WORKSHOP_SCHEDULES;
 
 const TIME_FILTER_LABELS: Record<WorkshopSessionTimeFilter, string> = {
   "1d": "Today",
@@ -49,34 +46,14 @@ const TIME_FILTER_LABELS: Record<WorkshopSessionTimeFilter, string> = {
   all: "All upcoming",
 };
 
-async function generateUpcomingWorkshopSessions(daysAhead = 90) {
-  const start = getWorkshopBookingMinDate();
-  const tasks: Promise<unknown>[] = [];
-
-  for (let offset = 0; offset <= daysAhead; offset += 1) {
-    const date = addDays(start, offset);
-
-    for (const scheduleId of WORKSHOP_SCHEDULES) {
-      if (!isDateAllowedForWorkshop(scheduleId, date)) continue;
-
-      for (const slot of getSlotsForWorkshop(scheduleId, date)) {
-        tasks.push(
-          supabase.rpc("ensure_workshop_session", {
-            p_schedule_id: scheduleId,
-            p_session_date: format(date, "yyyy-MM-dd"),
-            p_slot: slot,
-          }),
-        );
-      }
-    }
-  }
-
-  await Promise.all(tasks);
-}
-
 const WorkshopSessionManagement = () => {
   const [timeFilter, setTimeFilter] = useState<WorkshopSessionTimeFilter>("1m");
   const [typeFilter, setTypeFilter] = useState<WorkshopSessionTypeFilter>("all");
+  const { allExperiences } = useWorkshopCatalog({ includeHidden: true });
+  const activeWorkshopSchedules = useMemo(
+    () => getActiveWorkshopSchedules(allExperiences),
+    [allExperiences],
+  );
   const { sessions, loading, refresh } = useWorkshopSessionAdminList(timeFilter, typeFilter);
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
@@ -107,7 +84,7 @@ const WorkshopSessionManagement = () => {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      await generateUpcomingWorkshopSessions();
+      await generateUpcomingWorkshopSessions(activeWorkshopSchedules);
       await supabase.rpc("sync_workshop_sessions_from_orders");
       toast({
         title: "Sessions generated",
@@ -231,7 +208,7 @@ const WorkshopSessionManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All workshops</SelectItem>
-                  {WORKSHOP_SCHEDULES.map((scheduleId) => (
+                  {WORKSHOP_SCHEDULE_IDS.map((scheduleId) => (
                     <SelectItem key={scheduleId} value={scheduleId}>
                       {SCHEDULE_LABELS[scheduleId]}
                     </SelectItem>

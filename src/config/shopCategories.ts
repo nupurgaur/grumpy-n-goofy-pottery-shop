@@ -35,6 +35,16 @@ export const SHOP_CATEGORIES = [
     label: "Vases",
     tagline: "For single stems, wild bouquets, and quiet shelves.",
   },
+  {
+    value: "kitchen-towel-holders",
+    label: "Kitchen Towel Holder",
+    tagline: "Keep tea towels tidy with a little clay character.",
+  },
+  {
+    value: "tea-light-holders",
+    label: "Tea-Light Holders",
+    tagline: "A warm flicker in handmade ceramic.",
+  },
 ] as const;
 
 export const getShopCategoryMeta = (categoryValue: string) =>

@@ -25,8 +25,22 @@ export async function getEdgeFunctionErrorMessage(
   }
 
   if (error instanceof Error && error.message) {
-    return error.message;
+    if (error.message !== "Edge Function returned a non-2xx status code") {
+      return error.message;
+    }
   }
 
   return fallback;
+}
+
+/** Payment verification helper — same parsing as other edge function calls. */
+export async function readEdgeFunctionErrorMessage(
+  data: unknown,
+  invokeError: unknown,
+): Promise<string> {
+  return getEdgeFunctionErrorMessage(
+    invokeError,
+    data,
+    "Payment verification failed",
+  );
 }

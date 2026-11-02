@@ -151,6 +151,11 @@ const CartItem = ({
               .join(", ")}
           </p>
         )}
+        {item.workshop_booking?.foodBeverageContactRequested && (
+          <p className="text-xs text-muted-foreground">
+            Food &amp; beverages — we&apos;ll contact you separately
+          </p>
+        )}
         
         <div className="flex items-center space-x-2">
           {!isWorkshopCartItem(item.product_id, item.product_name) && (

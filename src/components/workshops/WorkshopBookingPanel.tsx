@@ -1,6 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { formatWorkshopSessionDate } from "@/lib/workshopSchedule";
+import { useCart } from "@/hooks/useCart";
+import {
+  countOneTimeSeatsInCart,
+  findCartWorkshopSlotConflict,
+  isExclusiveWorkshopSchedule,
+  isOneTimeWorkshopSchedule,
+  workshopSlotConflictMessage,
+} from "@/lib/workshopParticipants";
+import { getBookableOneTimeSeats } from "@/lib/workshopSessionAvailability";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FOOD_WINE_ADDON, formatWorkshopPrice } from "@/config/workshops";
+import { formatWorkshopPrice } from "@/config/workshops";
 import type { WorkshopScheduleId } from "@/lib/workshopSchedule";
 import { getSlotsForWorkshop } from "@/lib/workshopSchedule";
 import { BookingSummaryCard } from "./BookingSummaryCard";
@@ -30,8 +40,9 @@ type WorkshopBookingPanelProps = {
   booking?: boolean;
   minQuantity?: number;
   maxQuantity?: number;
-  foodWineSelected?: boolean;
-  onFoodWineChange?: (selected: boolean) => void;
+  foodBeverageContact?: { label: string; hint?: string };
+  foodBeverageContactSelected?: boolean;
+  onFoodBeverageContactChange?: (selected: boolean) => void;
 };
 
 export const WorkshopBookingPanel = ({
@@ -52,18 +63,60 @@ export const WorkshopBookingPanel = ({
   booking = false,
   minQuantity,
   maxQuantity,
-  foodWineSelected,
-  onFoodWineChange,
+  foodBeverageContact,
+  foodBeverageContactSelected,
+  onFoodBeverageContactChange,
 }: WorkshopBookingPanelProps) => {
+  const { items: cartItems } = useCart();
   const limits = getWorkshopTicketLimits(scheduleId);
   const minTickets = minQuantity ?? limits.min;
   const slots = selectedDate ? getSlotsForWorkshop(scheduleId, selectedDate) : [];
   const { availabilityBySlot } = useWorkshopSessionAvailability(scheduleId, selectedDate);
+
+  const cartBlockedSlots = useMemo(() => {
+    if (!selectedDate) return new Set<string>();
+    const sessionDate = formatWorkshopSessionDate(selectedDate);
+    const blocked = new Set<string>();
+    for (const slot of slots) {
+      if (
+        findCartWorkshopSlotConflict(cartItems, {
+          scheduleId,
+          sessionDate,
+          slot,
+        })
+      ) {
+        blocked.add(slot);
+      }
+    }
+    return blocked;
+  }, [cartItems, scheduleId, selectedDate, slots]);
+
+  const cartSlotConflict =
+    selectedDate && selectedSlot
+      ? findCartWorkshopSlotConflict(cartItems, {
+          scheduleId,
+          sessionDate: formatWorkshopSessionDate(selectedDate),
+          slot: selectedSlot,
+        })
+      : null;
   const selectedAvailability = selectedSlot ? availabilityBySlot[selectedSlot] : undefined;
+  const sessionDateStr = selectedDate ? formatWorkshopSessionDate(selectedDate) : "";
+  const oneTimeSeatsInCart =
+    selectedSlot && sessionDateStr && isOneTimeWorkshopSchedule(scheduleId)
+      ? countOneTimeSeatsInCart(cartItems, sessionDateStr, selectedSlot)
+      : 0;
+  const effectiveSeatRemaining =
+    selectedAvailability && isOneTimeWorkshopSchedule(scheduleId)
+      ? getBookableOneTimeSeats(selectedAvailability.remaining, oneTimeSeatsInCart)
+      : selectedAvailability?.remaining ?? 0;
   const seatsPerUnit = scheduleId === "date-night" ? 2 : 1;
   const configuredMax = maxQuantity ?? limits.max;
   const maxByCapacity = selectedAvailability
-    ? Math.floor(selectedAvailability.remaining / seatsPerUnit)
+    ? isExclusiveWorkshopSchedule(scheduleId)
+      ? effectiveSeatRemaining > 0
+        ? configuredMax
+        : 0
+      : Math.floor(effectiveSeatRemaining / seatsPerUnit)
     : null;
   const maxTickets =
     maxByCapacity == null
@@ -75,17 +128,22 @@ export const WorkshopBookingPanel = ({
     maxTickets < minTickets;
   const showQuantityPicker =
     maxTickets > 0 && !belowMinCapacity && minTickets !== maxTickets;
-  const addonTotal = foodWineSelected ? FOOD_WINE_ADDON.price : 0;
-  const totalPrice = unitPrice * quantity + addonTotal;
-  const canBook = Boolean(
+  const totalPrice = unitPrice * quantity;
+  const seatsNeeded = getRequiredParticipantCount(scheduleId, quantity);
+  const capacityBlocked = selectedAvailability
+    ? !selectedAvailability.isActive ||
+      (isExclusiveWorkshopSchedule(scheduleId)
+        ? effectiveSeatRemaining <= 0
+        : seatsNeeded > effectiveSeatRemaining)
+    : false;
+  const cartBlocked = Boolean(cartSlotConflict);
+  const showSummary = Boolean(
     selectedDate &&
-    selectedSlot &&
-    quantity >= minTickets &&
-    selectedAvailability &&
-    selectedAvailability.isActive &&
-    getRequiredParticipantCount(scheduleId, quantity) <= selectedAvailability.remaining,
+      selectedSlot &&
+      maxTickets > 0 &&
+      !belowMinCapacity &&
+      quantity >= minTickets,
   );
-
   useEffect(() => {
     if (maxTickets <= 0) return;
     if (quantity > maxTickets) {
@@ -118,8 +176,16 @@ export const WorkshopBookingPanel = ({
           compact
           availabilityBySlot={availabilityBySlot}
           seatsPerBooking={seatsPerUnit}
-          coupleSlot={scheduleId === "date-night"}
+          cartBlockedSlots={cartBlockedSlots}
+          showPoolSpotsLeft={isOneTimeWorkshopSchedule(scheduleId)}
+          scheduleId={scheduleId}
         />
+      )}
+
+      {cartSlotConflict && (
+        <p className="text-sm text-destructive">
+          {workshopSlotConflictMessage(cartSlotConflict, scheduleId)}
+        </p>
       )}
 
       {selectedDate && selectedSlot && maxTickets === 0 && (
@@ -153,26 +219,41 @@ export const WorkshopBookingPanel = ({
         />
       )}
 
-      {selectedDate && selectedSlot && maxTickets > 0 && !belowMinCapacity && onFoodWineChange && (
+      {selectedDate &&
+        selectedSlot &&
+        maxTickets > 0 &&
+        !belowMinCapacity &&
+        onFoodBeverageContactChange &&
+        foodBeverageContact && (
         <label className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/30 px-4 py-3 cursor-pointer">
           <Checkbox
-            checked={Boolean(foodWineSelected)}
-            onCheckedChange={(checked) => onFoodWineChange(checked === true)}
+            checked={Boolean(foodBeverageContactSelected)}
+            onCheckedChange={(checked) =>
+              onFoodBeverageContactChange(checked === true)
+            }
             className="mt-0.5"
           />
           <span className="space-y-0.5">
             <span className="flex items-center gap-1.5 text-sm font-sans font-medium text-brand-primary">
               <Wine className="h-4 w-4 text-brand-secondary" />
-              Add {FOOD_WINE_ADDON.label}
+              {foodBeverageContact.label}
             </span>
-            <span className="block text-xs text-muted-foreground font-sans">
-              Optional pairing for your session · {formatWorkshopPrice(FOOD_WINE_ADDON.price)}
-            </span>
+            {foodBeverageContact.hint && (
+              <span className="block text-xs text-muted-foreground font-sans">
+                {foodBeverageContact.hint}
+              </span>
+            )}
           </span>
         </label>
       )}
 
-      {canBook && selectedDate && selectedSlot && (
+      {capacityBlocked && selectedDate && selectedSlot && (
+        <p className="text-sm text-destructive">
+          This session is not open for booking. Pick another date or time.
+        </p>
+      )}
+
+      {showSummary && selectedDate && selectedSlot && (
         <BookingSummaryCard
           workshopType={workshopTitle}
           date={selectedDate}
@@ -181,13 +262,15 @@ export const WorkshopBookingPanel = ({
           quantityLabel={quantityLabel}
           unitPriceLabel={unitPriceLabel}
           totalPriceLabel={formatWorkshopPrice(totalPrice)}
-          addonLabel={foodWineSelected ? FOOD_WINE_ADDON.label : undefined}
-          addonPriceLabel={
-            foodWineSelected ? formatWorkshopPrice(FOOD_WINE_ADDON.price) : undefined
+          contactNote={
+            foodBeverageContactSelected && foodBeverageContact
+              ? "Food & beverages — we'll contact you separately"
+              : undefined
           }
           ctaLabel={ctaLabel}
           onBook={onBook}
           booking={booking}
+          submitDisabled={capacityBlocked || cartBlocked}
         />
       )}
     </div>

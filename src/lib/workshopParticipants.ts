@@ -18,6 +18,7 @@ export type WorkshopBookingMeta = {
   slot: string;
   participants?: WorkshopParticipant[];
   addOns?: WorkshopAddOn[];
+  foodBeverageContactRequested?: boolean;
 };
 
 export function getWorkshopAddonTotal(
@@ -39,6 +40,119 @@ const ONE_TIME_SCHEDULES: WorkshopScheduleId[] = [
   "handbuilding-ceramics",
   "wheel-throwing",
 ];
+
+const EXCLUSIVE_SCHEDULES: WorkshopScheduleId[] = ["date-night", "private-clay-parties"];
+
+const WORKSHOP_SCHEDULE_SHORT_LABELS: Record<WorkshopScheduleId, string> = {
+  "paint-your-own-pot": "a one-time workshop",
+  "handbuilding-ceramics": "a one-time workshop",
+  "wheel-throwing": "a one-time workshop",
+  "date-night": "Date Night",
+  "private-clay-parties": "a private clay party",
+};
+
+export function isOneTimeWorkshopSchedule(scheduleId: WorkshopScheduleId): boolean {
+  return ONE_TIME_SCHEDULES.includes(scheduleId);
+}
+
+export function isExclusiveWorkshopSchedule(scheduleId: WorkshopScheduleId): boolean {
+  return EXCLUSIVE_SCHEDULES.includes(scheduleId);
+}
+
+export function normalizeWorkshopSlot(slot: string): string {
+  return slot.replace(/\u2013|\u2014/g, "–").replace(/\s+/g, " ").trim();
+}
+
+function workshopSlotKeysMatch(
+  meta: WorkshopBookingMeta,
+  incoming: { sessionDate: string; slot: string },
+): boolean {
+  const metaSlot = meta.slot?.trim();
+  const incomingSlot = incoming.slot?.trim();
+  if (!meta.sessionDate || !incoming.sessionDate || !metaSlot || !incomingSlot) {
+    return false;
+  }
+  return (
+    meta.sessionDate === incoming.sessionDate &&
+    normalizeWorkshopSlot(metaSlot) === normalizeWorkshopSlot(incomingSlot)
+  );
+}
+
+/** One-time vs date night / private (or two exclusives) cannot share the same date and time slot. */
+export function workshopsConflictForSameSlot(
+  existingScheduleId: WorkshopScheduleId,
+  incomingScheduleId: WorkshopScheduleId,
+): boolean {
+  if (existingScheduleId === incomingScheduleId) return false;
+  if (isExclusiveWorkshopSchedule(existingScheduleId) && isExclusiveWorkshopSchedule(incomingScheduleId)) {
+    return true;
+  }
+  if (isExclusiveWorkshopSchedule(existingScheduleId) && isOneTimeWorkshopSchedule(incomingScheduleId)) {
+    return true;
+  }
+  if (isOneTimeWorkshopSchedule(existingScheduleId) && isExclusiveWorkshopSchedule(incomingScheduleId)) {
+    return true;
+  }
+  return false;
+}
+
+export function findCartWorkshopSlotConflict(
+  items: Array<{
+    product_name: string;
+    quantity: number;
+    workshop_booking?: WorkshopBookingMeta | null;
+  }>,
+  incoming: {
+    scheduleId: WorkshopScheduleId;
+    sessionDate: string;
+    slot: string;
+  },
+): WorkshopScheduleId | null {
+  for (const item of items) {
+    const meta = getWorkshopBookingMeta(item);
+    if (!meta) continue;
+    if (!workshopSlotKeysMatch(meta, incoming)) continue;
+    if (workshopsConflictForSameSlot(meta.scheduleId, incoming.scheduleId)) {
+      return meta.scheduleId;
+    }
+  }
+  return null;
+}
+
+/** Paid-order pool does not include cart lines; subtract these when validating new bookings. */
+export function countOneTimeSeatsInCart(
+  items: Array<{
+    product_name: string;
+    quantity: number;
+    workshop_booking?: WorkshopBookingMeta | null;
+  }>,
+  sessionDate: string,
+  slot: string,
+): number {
+  let total = 0;
+  for (const item of items) {
+    const meta = getWorkshopBookingMeta(item);
+    if (!meta || !isOneTimeWorkshopSchedule(meta.scheduleId)) continue;
+    if (!workshopSlotKeysMatch(meta, { sessionDate, slot })) continue;
+    total += getRequiredParticipantCount(meta.scheduleId, item.quantity);
+  }
+  return total;
+}
+
+export function workshopSlotConflictMessage(
+  cartScheduleId: WorkshopScheduleId,
+  incomingScheduleId: WorkshopScheduleId,
+): string {
+  const inCart = WORKSHOP_SCHEDULE_SHORT_LABELS[cartScheduleId];
+  const adding = WORKSHOP_SCHEDULE_SHORT_LABELS[incomingScheduleId];
+  if (isOneTimeWorkshopSchedule(incomingScheduleId) && isExclusiveWorkshopSchedule(cartScheduleId)) {
+    return `You already have ${inCart} in your cart for this time slot. Remove it before booking ${adding}.`;
+  }
+  if (isExclusiveWorkshopSchedule(incomingScheduleId) && isOneTimeWorkshopSchedule(cartScheduleId)) {
+    return `You already have ${inCart} in your cart for this time slot. Remove it before booking ${adding}.`;
+  }
+  return `This time slot conflicts with ${inCart} already in your cart. Choose another slot or remove the other booking.`;
+}
 
 export function getMinAgeForWorkshop(scheduleId: WorkshopScheduleId): number {
   return scheduleId === "date-night" ? 20 : 12;
@@ -109,28 +223,39 @@ export function resolveScheduleIdFromTitle(title: string): WorkshopScheduleId | 
   return null;
 }
 
+/** Resolve schedule + date + time slot from cart/order line (JSON and/or product name). */
+export function buildWorkshopBookingMetaFromItem(item: {
+  product_name: string;
+  quantity: number;
+  workshop_booking?: WorkshopBookingMeta | null;
+}): WorkshopBookingMeta | null {
+  const parsed = parseWorkshopCartName(item.product_name);
+  const stored = item.workshop_booking;
+
+  const scheduleId =
+    (stored?.scheduleId as WorkshopScheduleId | undefined) ??
+    (parsed ? resolveScheduleIdFromTitle(parsed.title) : null);
+  const sessionDate = stored?.sessionDate ?? parsed?.sessionDate;
+  const slot = stored?.slot?.trim() || parsed?.slot?.trim();
+
+  if (!scheduleId || !sessionDate || !slot) return null;
+
+  return {
+    scheduleId,
+    sessionDate,
+    slot,
+    participants: stored?.participants,
+    addOns: stored?.addOns,
+    foodBeverageContactRequested: stored?.foodBeverageContactRequested,
+  };
+}
+
 export function getWorkshopBookingMeta(item: {
   product_name: string;
   quantity: number;
   workshop_booking?: WorkshopBookingMeta | null;
 }): WorkshopBookingMeta | null {
-  if (item.workshop_booking?.scheduleId && item.workshop_booking.sessionDate) {
-    return item.workshop_booking;
-  }
-
-  const parsed = parseWorkshopCartName(item.product_name);
-  if (!parsed) return null;
-
-  const scheduleId = resolveScheduleIdFromTitle(parsed.title);
-  if (!scheduleId) return null;
-
-  return {
-    scheduleId,
-    sessionDate: parsed.sessionDate,
-    slot: parsed.slot,
-    participants: item.workshop_booking?.participants,
-    addOns: item.workshop_booking?.addOns,
-  };
+  return buildWorkshopBookingMetaFromItem(item);
 }
 
 export function validateParticipant(

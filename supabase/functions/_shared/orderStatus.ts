@@ -28,9 +28,7 @@ export async function finalizeDigitalOrderStatus(
       .eq("id", orderId);
 
     if (fallbackError) {
-      throw new Error(`Failed to update order status: ${fallbackError.message}`);
+      console.error("Could not set fallback fulfillment status:", fallbackError);
     }
-  } else {
-    throw new Error(`Failed to update order status: ${error.message}`);
   }
 }

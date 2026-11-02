@@ -14,7 +14,8 @@ const EXPERIENCE_ICONS: Record<OneTimeExperienceId, typeof Brush> = {
 };
 
 export const OneTimeExperiences = () => {
-  const { oneTimeExperiences, loading } = useWorkshopCatalog();
+  const { oneTimeExperiences, loading, tabs } = useWorkshopCatalog();
+  const oneTimeTab = tabs.find((tab) => tab.id === "one-time");
   const [experienceId, setExperienceId] = useState<OneTimeExperienceId | null>(null);
 
   useEffect(() => {
@@ -43,11 +44,12 @@ export const OneTimeExperiences = () => {
     <div className="space-y-8">
       <div className="space-y-4">
         <h2 className={`text-2xl text-brand-primary ${typography.heading}`}>
-          One-Time Experiences
+          {oneTimeTab?.label ?? "One-Time Experiences"}
         </h2>
-        {oneTimeExperiences.length > 1 && (
+        {(oneTimeTab?.tagline || oneTimeExperiences.length > 1) && (
           <p className="text-sm font-sans text-muted-foreground">
-            Choose an experience to see details and book your spot.
+            {oneTimeTab?.tagline ||
+              "Choose an experience to see details and book your spot."}
           </p>
         )}
         <div className={cn(

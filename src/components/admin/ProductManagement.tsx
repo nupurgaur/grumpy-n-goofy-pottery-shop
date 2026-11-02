@@ -19,6 +19,7 @@ import { TemplatePdfUpload } from './TemplatePdfUpload';
 import CustomPotManagement from './CustomPotManagement';
 import { TEMPLATE_STOCK_QUANTITY, isTemplateProduct } from '@/config/templates';
 import { isWorkshopProduct } from '@/config/workshops';
+import { SHOP_CATEGORIES } from '@/config/shopCategories';
 
 const ProductManagement = () => {
   const { products, loading, refreshProducts } = useAdminProducts();
@@ -36,17 +37,10 @@ const ProductManagement = () => {
     [products],
   );
 
-  // Category options
   const categories = [
-    { value: 'mugs', label: 'Mugs' },
-    { value: 'bowls', label: 'Bowls' },
-    { value: 'plates', label: 'Plates' },
-    { value: 'ceramic-clocks', label: 'Ceramic Clocks' },
-    { value: 'lamps', label: 'Lamps' },
-    { value: 'spoon-rests', label: 'Spoon Rests' },
-    { value: 'vases', label: 'Vases' },
+    ...SHOP_CATEGORIES.map(({ value, label }) => ({ value, label })),
     { value: 'templates', label: 'Templates' },
-    { value: 'general', label: 'General' }
+    { value: 'general', label: 'General' },
   ];
 
   // Form state

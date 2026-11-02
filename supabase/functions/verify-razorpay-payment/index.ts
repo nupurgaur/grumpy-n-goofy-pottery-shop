@@ -1,8 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getStudioNotificationEmail, sendTransactionalEmail } from "../_shared/email.ts";
+import { syncOrderToGoogleCalendar } from "../_shared/orderCalendarSync.ts";
 import { finalizeDigitalOrderStatus } from "../_shared/orderStatus.ts";
-import { isWorkshopCartItem, resolveOrderItemProductId } from "../_shared/workshop.ts";
+import {
+  isWorkshopCartItem,
+  resolveOrderItemProductId,
+  resolveWorkshopBookingFromCartLine,
+} from "../_shared/workshop.ts";
 import {
   getRequiredParticipantCount,
   getWorkshopAddonTotal,
@@ -231,6 +236,98 @@ async function sendTemplateEmails(
   });
 }
 
+async function sendShopOrderEmails(
+  orderDetails: {
+    customer_name: string;
+    customer_email: string;
+    customer_phone?: string;
+    shipping_address?: string;
+    total_amount: number;
+  },
+  orderId: string,
+  cartItems: Array<{
+    product_name: string;
+    product_price: number;
+    quantity: number;
+  }>,
+): Promise<void> {
+  const contactTo = getStudioNotificationEmail();
+
+  const itemLines = cartItems.map((item) => {
+    const lineTotal = item.product_price * item.quantity;
+    return `• ${item.product_name} × ${item.quantity} — ₹${lineTotal.toLocaleString('en-IN')}`;
+  });
+
+  const text = [
+    `Hi ${orderDetails.customer_name},`,
+    '',
+    'Thank you for your order from Goofy n Grumpy!',
+    '',
+    `Order ID: ${orderId}`,
+    '',
+    'Items:',
+    ...itemLines,
+    '',
+    `Total paid: ₹${orderDetails.total_amount.toLocaleString('en-IN')}`,
+    '',
+    `Shipping address:`,
+    orderDetails.shipping_address || '—',
+    '',
+    `Phone: ${orderDetails.customer_phone || '—'}`,
+    '',
+    'We will prepare your order and share shipping updates soon.',
+    '',
+    '— Goofy n Grumpy Studio',
+  ].join('\n');
+
+  const htmlItems = itemLines
+    .map((line) => `<li style="margin-bottom:6px">${escapeHtml(line.replace(/^• /, ''))}</li>`)
+    .join('');
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px">
+      <h2 style="color:#0D2B52;margin:0 0 12px">Order confirmed</h2>
+      <p>Hi ${escapeHtml(orderDetails.customer_name)},</p>
+      <p>Thank you for your order! Here are your details:</p>
+      <p><strong>Order ID:</strong> ${escapeHtml(orderId)}</p>
+      <ul style="padding-left:18px">${htmlItems}</ul>
+      <p><strong>Total paid:</strong> ₹${orderDetails.total_amount.toLocaleString('en-IN')}</p>
+      <p><strong>Shipping address:</strong><br/>${escapeHtml(orderDetails.shipping_address || '—').replaceAll('\n', '<br/>')}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(orderDetails.customer_phone || '—')}</p>
+      <p style="margin-top:16px">We will prepare your order and share shipping updates soon.</p>
+      <p style="color:#888;font-size:12px">— Goofy n Grumpy Studio</p>
+    </div>
+  `;
+
+  await sendTransactionalEmail({
+    to: [orderDetails.customer_email],
+    subject: 'Your Goofy n Grumpy order is confirmed',
+    text,
+    html,
+  });
+
+  await sendTransactionalEmail({
+    to: [contactTo],
+    subject: `New shop order — ${orderDetails.customer_name}`,
+    text: [
+      'New shop order received',
+      '',
+      `Order ID: ${orderId}`,
+      `Customer: ${orderDetails.customer_name}`,
+      `Email: ${orderDetails.customer_email}`,
+      `Phone: ${orderDetails.customer_phone || '—'}`,
+      '',
+      'Items:',
+      ...itemLines,
+      '',
+      `Total: ₹${orderDetails.total_amount.toLocaleString('en-IN')}`,
+      '',
+      'Shipping address:',
+      orderDetails.shipping_address || '—',
+    ].join('\n'),
+  });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -331,10 +428,16 @@ serve(async (req) => {
     for (const item of cart_items ?? []) {
       if (!isWorkshopItem(item)) continue;
 
-      const booking = (item as { workshop_booking?: WorkshopBookingRecord }).workshop_booking;
-      if (!booking?.scheduleId || !booking.sessionDate || !booking.slot) {
+      const booking = resolveWorkshopBookingFromCartLine(
+        item as { product_name: string; workshop_booking?: WorkshopBookingRecord },
+      );
+      if (!booking) {
         throw new Error('Workshop booking details are incomplete.');
       }
+
+      const participants =
+        (item as { workshop_booking?: WorkshopBookingRecord }).workshop_booking?.participants ??
+        booking.participants;
 
       const policyError = validateWorkshopBookingPolicy(
         booking.scheduleId,
@@ -348,13 +451,25 @@ serve(async (req) => {
       const validationError = validateWorkshopBooking(
         booking.scheduleId,
         item.quantity,
-        booking.participants,
+        participants as WorkshopBookingRecord['participants'],
       );
       if (validationError) {
         throw new Error(validationError);
       }
 
       const seatsNeeded = getRequiredParticipantCount(booking.scheduleId, item.quantity);
+
+      const { error: ensureSessionError } = await supabase.rpc('ensure_workshop_session', {
+        p_schedule_id: booking.scheduleId,
+        p_session_date: booking.sessionDate,
+        p_slot: booking.slot,
+      });
+
+      if (ensureSessionError) {
+        console.error('ensure_workshop_session failed:', ensureSessionError);
+        throw new Error(`Could not reserve workshop session: ${ensureSessionError.message}`);
+      }
+
       const { data: availability, error: availabilityError } = await supabase.rpc(
         'get_workshop_session_availability',
         {
@@ -421,7 +536,19 @@ serve(async (req) => {
       if (item.custom_design != null) {
         row.custom_design = item.custom_design;
       }
-      if (item.workshop_booking != null) {
+      if (isWorkshopCartItem(item)) {
+        const resolved = resolveWorkshopBookingFromCartLine(item);
+        if (resolved) {
+          row.workshop_booking = {
+            ...(item.workshop_booking ?? {}),
+            scheduleId: resolved.scheduleId,
+            sessionDate: resolved.sessionDate,
+            slot: resolved.slot,
+            participants: resolved.participants ?? item.workshop_booking?.participants ?? [],
+            addOns: resolved.addOns ?? item.workshop_booking?.addOns,
+          };
+        }
+      } else if (item.workshop_booking != null) {
         row.workshop_booking = item.workshop_booking;
       }
       return row;
@@ -434,6 +561,13 @@ serve(async (req) => {
     if (itemsError) {
       console.error('Error creating order items:', itemsError);
       throw new Error('Failed to create order items');
+    }
+
+    if (isWorkshopOrder) {
+      const { error: syncSessionsError } = await supabase.rpc('sync_workshop_sessions_from_orders');
+      if (syncSessionsError) {
+        console.error('Error syncing workshop sessions from orders:', syncSessionsError);
+      }
     }
 
     const { error: cartError } = await supabase
@@ -507,10 +641,18 @@ serve(async (req) => {
         });
 
     if (isWorkshopOrder) {
-      await sendWorkshopEmails(order_details, order.id, cart_items);
+      try {
+        await sendWorkshopEmails(order_details, order.id, cart_items);
+      } catch (emailError) {
+        console.error('Workshop confirmation email failed (order still confirmed):', emailError);
+      }
       await finalizeDigitalOrderStatus(supabase, order.id, 'workshop_confirmed');
     } else if (isTemplateOrder) {
-      await sendTemplateEmails(order_details, order.id, buildTemplateItems());
+      try {
+        await sendTemplateEmails(order_details, order.id, buildTemplateItems());
+      } catch (emailError) {
+        console.error('Template email failed (order still confirmed):', emailError);
+      }
       await finalizeDigitalOrderStatus(supabase, order.id, 'template_delivered');
     } else {
       try {
@@ -529,6 +671,40 @@ serve(async (req) => {
       } catch (shiprocketError) {
         console.error('Error creating Shiprocket shipment:', shiprocketError);
       }
+
+      try {
+        await sendShopOrderEmails(
+          {
+            customer_name: order_details.customer_name,
+            customer_email: order_details.customer_email,
+            customer_phone: order_details.customer_phone,
+            shipping_address: order_details.shipping_address,
+            total_amount: order_details.total_amount,
+          },
+          order.id,
+          cart_items,
+        );
+      } catch (emailError) {
+        console.error('Shop order confirmation email failed (order still confirmed):', emailError);
+      }
+    }
+
+    try {
+      await syncOrderToGoogleCalendar({
+        orderId: order.id,
+        orderDetails: {
+          customer_name: order_details.customer_name,
+          customer_email: order_details.customer_email,
+          customer_phone: order_details.customer_phone,
+          shipping_address: order_details.shipping_address,
+          total_amount: order_details.total_amount,
+        },
+        cartItems: cart_items,
+        isWorkshopOrder,
+        isTemplateOrder,
+      });
+    } catch (calendarError) {
+      console.error('Google Calendar sync failed (order still confirmed):', calendarError);
     }
 
     return new Response(JSON.stringify({

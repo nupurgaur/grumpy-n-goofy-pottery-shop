@@ -8,7 +8,7 @@ export type ContactMessagePayload = {
 };
 
 async function sendViaFormSubmit(payload: ContactMessagePayload) {
-  const response = await fetch("https://formsubmit.co/ajax/grumpyngoofy@gmail.com", {
+  const response = await fetch("https://formsubmit.co/ajax/goofyngrumpystudio@gmail.com", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export async function sendContactMessage(payload: ContactMessagePayload) {
           : "Fallback send failed";
       if (fallbackMessage.toLowerCase().includes("activation")) {
         throw new Error(
-          "Please check grumpyngoofy@gmail.com for a FormSubmit activation email and click the link. Or add Gmail/Resend credentials in Supabase.",
+          "Please check goofyngrumpystudio@gmail.com for a FormSubmit activation email and click the link. Or add Gmail/Resend credentials in Supabase.",
         );
       }
       throw new Error(fallbackMessage || edgeMessage);

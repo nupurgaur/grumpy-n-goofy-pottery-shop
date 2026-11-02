@@ -32,11 +32,31 @@ export interface OneTimeExperience {
 
 export const STUDIO_OPEN_DATE = new Date(2026, 8, 1);
 
-/** Hidden from the public workshop page until we bring them back */
-export const PAUSED_ONE_TIME_EXPERIENCE_IDS: OneTimeExperienceId[] = [
+/** Hidden in catalog fallback until admin publishes them */
+export const DEFAULT_HIDDEN_ONE_TIME_EXPERIENCE_IDS: OneTimeExperienceId[] = [
   "paint-your-own-pot",
   "wheel-throwing",
 ];
+
+export const WORKSHOP_SCHEDULE_IDS: WorkshopScheduleId[] = [
+  "paint-your-own-pot",
+  "handbuilding-ceramics",
+  "wheel-throwing",
+  "date-night",
+  "private-clay-parties",
+];
+
+export function getActiveWorkshopSchedules(
+  experiences: ReadonlyArray<{ id: string; is_visible: boolean }>,
+): WorkshopScheduleId[] {
+  const visibleIds = new Set(
+    experiences.filter((experience) => experience.is_visible).map((experience) => experience.id),
+  );
+  return WORKSHOP_SCHEDULE_IDS.filter((scheduleId) => visibleIds.has(scheduleId));
+}
+
+/** Shared pool per studio time slot (all one-time experiences combined) */
+export const STUDIO_ONE_TIME_SLOT_CAPACITY = 8;
 
 /** Regular drop-in sessions stay small; larger groups book a private party */
 export const MAX_ONE_TIME_TICKETS = 4;
@@ -68,12 +88,6 @@ export const WORKSHOP_PRODUCT_IDS: Record<WorkshopScheduleId, number> = {
   "date-night": 9994,
   "private-clay-parties": 9995,
 };
-
-export const BOOKABLE_WORKSHOP_SCHEDULES: WorkshopScheduleId[] = [
-  "handbuilding-ceramics",
-  "date-night",
-  "private-clay-parties",
-];
 
 export const WORKSHOP_PLACEHOLDER_PRODUCT_IDS = Object.values(WORKSHOP_PRODUCT_IDS);
 
@@ -135,7 +149,7 @@ export const TOP_WORKSHOP_TABS: {
   },
   {
     id: "date-night",
-    label: "Date Night",
+    label: "Pottery Date for Couples",
     tagline:
       "A memorable evening making pottery together — perfect for couples.",
   },
@@ -204,8 +218,11 @@ export const ONE_TIME_EXPERIENCES: OneTimeExperience[] = [
   },
 ];
 
+export const DATE_NIGHT_OPTIONAL_FOOD_WINE_NOTE =
+  "Optional wine & food on request — available at an extra charge.";
+
 export const DATE_NIGHT = {
-  title: "Clay Date Night",
+  title: "Pottery date for couples",
   tagline:
     "Skip the usual dinner date — laugh, create, and make keepsakes you'll actually keep.",
   description:
@@ -220,7 +237,8 @@ export const DATE_NIGHT = {
     "Shared creative session",
     "Studio materials",
   ],
-  addOns: [`${FOOD_WINE_ADDON.label} — ${formatWorkshopPrice(FOOD_WINE_ADDON.price)}`],
+  optionalFoodWineNote: DATE_NIGHT_OPTIONAL_FOOD_WINE_NOTE,
+  addOns: [] as string[],
   firingNote:
     "Firing and glazing of finished pieces available at an additional cost.",
   messageCard:

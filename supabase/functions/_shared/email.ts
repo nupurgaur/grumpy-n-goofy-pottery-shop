@@ -1,19 +1,43 @@
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+/** Default From address for order & workshop confirmation emails */
+export const STUDIO_SENDER_EMAIL = "goofyngrumpystudio@gmail.com";
+
 export type SendEmailParams = {
   to: string[];
   subject: string;
   text: string;
   html?: string;
+  replyTo?: string;
 };
 
+export function formatStudioFromAddress(email: string): string {
+  return email.includes("<") ? email : `Goofy n Grumpy <${email}>`;
+}
+
 function getFromEmail(): string {
-  const fromEmailRaw = Deno.env.get("CONTACT_FROM_EMAIL") || "no-reply@goofyngrumpy.com";
-  return fromEmailRaw.includes("<") ? fromEmailRaw : `Goofy n Grumpy <${fromEmailRaw}>`;
+  const fromEmailRaw = Deno.env.get("CONTACT_FROM_EMAIL") || STUDIO_SENDER_EMAIL;
+  return formatStudioFromAddress(fromEmailRaw);
+}
+
+function getGmailAppPassword(): string | undefined {
+  const raw = Deno.env.get("GMAIL_APP_PASSWORD");
+  if (!raw) return undefined;
+  return raw.replace(/\s+/g, "");
 }
 
 function getGmailFromAddress(): string {
-  return Deno.env.get("GMAIL_USER") || "grumpyngoofy@gmail.com";
+  return Deno.env.get("GMAIL_USER") || STUDIO_SENDER_EMAIL;
+}
+
+function formatSmtpError(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/535|5\.7\.8|BadCredentials|Username and Password not accepted/i.test(message)) {
+    return new Error(
+      "Gmail SMTP login failed. Generate a new Google App Password for GMAIL_USER and update the GMAIL_APP_PASSWORD secret in Supabase (2-Step Verification required).",
+    );
+  }
+  return error instanceof Error ? error : new Error(message);
 }
 
 async function sendViaResend(params: SendEmailParams): Promise<void> {
@@ -44,7 +68,7 @@ async function sendViaResend(params: SendEmailParams): Promise<void> {
 
 async function sendViaGmail(params: SendEmailParams): Promise<void> {
   const gmailUser = Deno.env.get("GMAIL_USER");
-  const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
+  const gmailAppPassword = getGmailAppPassword();
 
   if (!gmailUser || !gmailAppPassword) {
     throw new Error("GMAIL_USER and GMAIL_APP_PASSWORD not configured");
@@ -56,7 +80,7 @@ async function sendViaGmail(params: SendEmailParams): Promise<void> {
       port: 465,
       tls: true,
       auth: {
-        username: gmailUser,
+        username: gmailUser.trim(),
         password: gmailAppPassword,
       },
     },
@@ -64,12 +88,15 @@ async function sendViaGmail(params: SendEmailParams): Promise<void> {
 
   try {
     await client.send({
-      from: gmailUser,
+      from: formatStudioFromAddress(gmailUser.trim()),
       to: params.to.join(", "),
       subject: params.subject,
       content: params.text,
       html: params.html,
+      ...(params.replyTo ? { replyTo: params.replyTo } : {}),
     });
+  } catch (error) {
+    throw formatSmtpError(error);
   } finally {
     await client.close();
   }
@@ -77,8 +104,8 @@ async function sendViaGmail(params: SendEmailParams): Promise<void> {
 
 export async function sendTransactionalEmail(params: SendEmailParams): Promise<void> {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  const gmailUser = Deno.env.get("GMAIL_USER");
-  const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
+  const gmailUser = Deno.env.get("GMAIL_USER")?.trim();
+  const gmailAppPassword = getGmailAppPassword();
 
   if (resendApiKey) {
     try {
