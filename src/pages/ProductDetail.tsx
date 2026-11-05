@@ -13,6 +13,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { getProductImages } from "@/lib/productImages";
 import { typography } from "@/config/typography";
 import { ProductCatalogLabels } from "@/components/ProductCatalogLabels";
+import { ProductDescription } from "@/components/ProductDescription";
 import { TemplateProductDetails } from "@/components/TemplateProductDetails";
 import { isTemplateProduct, TEMPLATE_TAGLINE } from "@/config/templates";
 import {
@@ -154,9 +155,7 @@ const ProductDetailPage = () => {
                 <p className="text-muted-foreground leading-relaxed">{TEMPLATE_TAGLINE}</p>
               ) : (
                 product.description && (
-                  <p className="text-muted-foreground leading-relaxed">
-                    {product.description}
-                  </p>
+                  <ProductDescription text={product.description} />
                 )
               )}
 

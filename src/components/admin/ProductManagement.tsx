@@ -421,7 +421,8 @@ const ProductManagement = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={2}
+                  rows={5}
+                  placeholder="Use blank lines between paragraphs. Lines starting with - become bullets. Wrap text in **double asterisks** for bold."
                 />
               </div>
 

@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Product } from "@/hooks/useProducts";
 import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { ProductDetailDialog } from "@/components/ProductDetailDialog";
+import { ProductDescription } from "@/components/ProductDescription";
 import { useState } from "react";
 import { typography } from "@/config/typography";
 import { isTemplateProduct } from "@/config/templates";
@@ -202,9 +203,13 @@ const Wishlist = () => {
                         <h3 className={`text-xl text-brand-primary mb-2 ${typography.heading}`}>
                           {product.name}
                         </h3>
-                        <p className="text-muted-foreground text-sm mb-4">
-                          {product.description}
-                        </p>
+                        {product.description && (
+                          <ProductDescription
+                            text={product.description}
+                            compact
+                            className="mb-4"
+                          />
+                        )}
                       </div>
                       {/* Stock Status */}
                       <div className="flex items-center space-x-2">

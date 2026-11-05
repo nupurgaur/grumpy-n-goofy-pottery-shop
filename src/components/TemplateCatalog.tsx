@@ -6,6 +6,7 @@ import { ProductImageCarousel } from "@/components/ProductImageCarousel";
 import { Product } from "@/hooks/useProducts";
 import { getProductImages, productDetailPath } from "@/lib/productImages";
 import { typography } from "@/config/typography";
+import { ProductDescription } from "@/components/ProductDescription";
 import { FileDown } from "lucide-react";
 
 interface TemplateCatalogProps {
@@ -52,9 +53,7 @@ export const TemplateCatalog = ({ templates }: TemplateCatalogProps) => {
                   </h3>
                 </Link>
                 {template.description && (
-                  <p className="text-sm text-muted-foreground font-sans line-clamp-2 leading-relaxed">
-                    {template.description}
-                  </p>
+                  <ProductDescription text={template.description} compact />
                 )}
               </div>
               <div className="flex items-center justify-between gap-3">

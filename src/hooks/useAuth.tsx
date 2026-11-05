@@ -10,6 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -152,6 +153,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+
+      if (error) {
+        const providerDisabled =
+          error.message.includes('provider is not enabled') ||
+          error.message.includes('Unsupported provider');
+
+        toast({
+          title: 'Google sign in failed',
+          description: providerDisabled
+            ? 'Google sign-in is not enabled for this project yet. In Supabase Dashboard → Authentication → Providers, turn on Google and add your Google OAuth Client ID and secret.'
+            : error.message,
+          variant: 'destructive',
+        });
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Something went wrong';
+      toast({
+        title: 'Google sign in failed',
+        description: message,
+        variant: 'destructive',
+      });
+      return { error };
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -232,6 +269,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdmin,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut
   };
 

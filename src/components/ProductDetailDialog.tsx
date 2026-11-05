@@ -9,10 +9,7 @@ import {
   ShoppingCart, 
   Package, 
   X, 
-  ZoomIn, 
-  ZoomOut, 
   RotateCcw,
-  RefreshCw,
   Plus,
   Minus,
   Info,
@@ -25,6 +22,7 @@ import { Product } from '@/hooks/useProducts';
 import { ProductImageCarousel } from '@/components/ProductImageCarousel';
 import { typography } from '@/config/typography';
 import { ProductCatalogLabels } from '@/components/ProductCatalogLabels';
+import { ProductDescription } from '@/components/ProductDescription';
 import { isTemplateProduct } from '@/config/templates';
 
 interface ProductDetailDialogProps {
@@ -202,14 +200,6 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
     setImageZoom(prev => Math.max(prev - 25, 50));
   };
 
-  const handleResetZoom = () => {
-    setImageZoom(100);
-    setImageRotation(0);
-    const resetPos = { x: 0, y: 0 };
-    setImagePosition(resetPos);
-    imagePositionRef.current = resetPos;
-  };
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (imageZoom > 100) {
       e.preventDefault();
@@ -380,17 +370,6 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
                 >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleResetZoom();
-                  }}
-                  className="bg-background/80 backdrop-blur-sm"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
               </div>
 
               {/* Zoom Indicator */}
@@ -427,9 +406,7 @@ export const ProductDetailDialog = ({ product, isOpen, onClose }: ProductDetailD
             <ProductCatalogLabels productName={product.name} />
 
             {product.description && (
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
+              <ProductDescription text={product.description} />
             )}
 
             {/* Price */}

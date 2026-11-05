@@ -9,6 +9,8 @@ interface ProductImageCarouselProps {
   className?: string;
   showDots?: boolean;
   showArrows?: boolean;
+  /** Always show nav arrows (for hero / touch devices). Default: visible on hover only. */
+  alwaysShowArrows?: boolean;
   autoPlay?: boolean;
   autoPlayInterval?: number;
   showCounter?: boolean;
@@ -22,6 +24,7 @@ export const ProductImageCarousel = ({
   className,
   showDots = true,
   showArrows = true,
+  alwaysShowArrows = false,
   autoPlay = false,
   autoPlayInterval = 3000,
   showCounter = true,
@@ -102,24 +105,36 @@ export const ProductImageCarousel = ({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Previous image"
+              className={cn(
+                "absolute left-2 top-1/2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm shadow-sm hover:bg-background transition-opacity",
+                alwaysShowArrows
+                  ? "opacity-100"
+                  : "opacity-0 group-hover:opacity-100",
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 goToPrevious();
               }}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Next image"
+              className={cn(
+                "absolute right-2 top-1/2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm shadow-sm hover:bg-background transition-opacity",
+                alwaysShowArrows
+                  ? "opacity-100"
+                  : "opacity-0 group-hover:opacity-100",
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 goToNext();
               }}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </>
         )}

@@ -12,6 +12,7 @@ import {
   TEMPLATE_PERFECT_FOR,
 } from "@/config/templates";
 import { typography } from "@/config/typography";
+import { ProductDescription } from "@/components/ProductDescription";
 
 interface TemplateProductDetailsProps {
   product: Product;
@@ -26,7 +27,7 @@ export const TemplateProductDetails = ({ product }: TemplateProductDetailsProps)
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground space-y-5 pb-4">
           {product.description && (
-            <p className="leading-relaxed">{product.description}</p>
+            <ProductDescription text={product.description} />
           )}
           <div className="space-y-2">
             {TEMPLATE_DESCRIPTION.map((line) => (

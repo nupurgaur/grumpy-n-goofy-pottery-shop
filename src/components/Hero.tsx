@@ -79,17 +79,18 @@ const Hero = ({ sectionTone = "off-white" }: { sectionTone?: HomeSectionTone }) 
             <div
               className={`relative ${HOME_SECTION_CAROUSEL_WIDTH_CLASS} flex-shrink-0 overflow-hidden rounded-2xl shadow-quirky hover:scale-105 transition-smooth`}
             >
+              <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-primary/20 to-transparent" />
               <ProductImageCarousel
                 images={HERO_CAROUSEL_IMAGES}
                 alt="Beautiful handcrafted pottery collection"
-                className={HOME_SECTION_CAROUSEL_CLASS}
+                className={`relative z-[1] ${HOME_SECTION_CAROUSEL_CLASS}`}
                 showArrows={true}
+                alwaysShowArrows={true}
                 showDots={true}
                 autoPlay={true}
                 autoPlayInterval={4000}
                 showCounter={false}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
             </div>
           </div>
         </div>

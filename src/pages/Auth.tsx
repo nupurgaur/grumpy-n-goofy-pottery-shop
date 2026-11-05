@@ -1,29 +1,72 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, XCircle } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
+
+const AUTH_REDIRECT_KEY = 'authRedirect';
+
+type AuthLocationState = {
+  from?: string;
+};
+
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const { signUp, signIn, user } = useAuth();
+  const { signUp, signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const from =
+    (location.state as AuthLocationState | null)?.from ??
+    sessionStorage.getItem(AUTH_REDIRECT_KEY) ??
+    '/';
+
+  const persistRedirectTarget = () => {
+    if (from && from !== '/') {
+      sessionStorage.setItem(AUTH_REDIRECT_KEY, from);
+    }
+  };
+
+  const clearRedirectTarget = () => {
+    sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+  };
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(from, { replace: true });
+      clearRedirectTarget();
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const errorDescription =
+      params.get('error_description') ?? hashParams.get('error_description');
+    if (!errorDescription) return;
+
+    toast({
+      title: 'Sign in failed',
+      description: decodeURIComponent(errorDescription.replace(/\+/g, ' ')),
+      variant: 'destructive',
+    });
+    window.history.replaceState(null, '', window.location.pathname);
+  }, [toast]);
 
   // Email validation
   const validateEmail = (email: string) => {
@@ -89,14 +132,20 @@ const Auth = () => {
     setIsLoading(true);
     const { error } = await signIn(email, password);
     if (!error) {
-      navigate('/');
+      navigate(from, { replace: true });
+      clearRedirectTarget();
     }
     setIsLoading(false);
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleGoogleSignIn = async () => {
+    persistRedirectTarget();
+    setIsGoogleLoading(true);
+    await signInWithGoogle();
+    setIsGoogleLoading(false);
   };
+
+  const authBusy = isLoading || isGoogleLoading;
 
   const isFormValid = email && password && !emailError && !passwordError;
 
@@ -118,7 +167,20 @@ const Auth = () => {
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            <GoogleSignInButton
+              onClick={handleGoogleSignIn}
+              isLoading={isGoogleLoading}
+              disabled={authBusy && !isGoogleLoading}
+            />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              </div>
+            </div>
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -168,7 +230,7 @@ const Auth = () => {
                   <Button 
                     type="submit" 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={authBusy}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Sign In
@@ -225,7 +287,7 @@ const Auth = () => {
                   <Button 
                     type="submit" 
                     className="w-full" 
-                    disabled={isLoading || !isFormValid}
+                    disabled={authBusy || !isFormValid}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Sign Up
